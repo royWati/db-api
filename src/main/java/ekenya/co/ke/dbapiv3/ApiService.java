@@ -356,7 +356,6 @@ public class ApiService {
 
                     where_clause = "WHERE "+where_clause;
 
-
                     where_clause = where_clause.replace("@","");
                     queryStringTemplate = queryStringTemplate.replace("{WHERE_CLAUSE}",where_clause);
                     break;
