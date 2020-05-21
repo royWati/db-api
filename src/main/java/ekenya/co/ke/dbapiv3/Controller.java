@@ -22,5 +22,9 @@ public class Controller {
     public Object fetchStoredProcedures(){
         return apiService.getStoredProcedures();
     }
+    @PostMapping(value = "/db-api/execute-operation", produces = "application/json")
+    public Object executeServicedQuery(@RequestBody String request){
+        return apiService.executeSavedSqlStatements(request);
+    }
 
 }

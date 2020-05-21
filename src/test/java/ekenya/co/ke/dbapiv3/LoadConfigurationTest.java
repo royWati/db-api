@@ -6,12 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+//@SpringBootTest
 class LoadConfigurationTest {
 
     @Autowired LoadConfiguration loadConfiguration;
 
-    @Test
+ //   @Test
     void updateQueryTemplate() {
 
         loadConfiguration.updateQueryTemplate();

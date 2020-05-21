@@ -5,7 +5,7 @@
     "TABLE_NAME": "TB_CUSTOMER",
     "COLUMN_NAMES": ["BLOCK_STATUS=1","@BLOCKED_BY = ?"],
     "WHERE_CLAUSE": ["@CUSTOMER_ID = ?"],
-    "DOCUMENTATION": ""
+    "DOCUMENTATION": "expected parameters in data field [BLOCKED BY, CUSTOMER_ID]."
   },
   {
     "QUERY_NAME": "UNBLOCK_USER_ACCOUNT",
@@ -13,6 +13,23 @@
     "TABLE_NAME": "TB_CUSTOMER",
     "COLUMN_NAMES": ["BLOCK_STATUS=0 "," @UNBLOCKED_BY = ?"],
     "WHERE_CLAUSE": ["@CUSTOMER_ID = ?"],
-    "DOCUMENTATION": ""
+    "DOCUMENTATION": "expected parameters in data field [UNBLOCKED_BY,CUSTOMER_ID]"
+  },
+  {
+    "QUERY_NAME": "CREATE_PROCESSING_CODE",
+    "CRUD_TYPE": "INSERT",
+    "TABLE_NAME": "TB_PROCESSING_CODES",
+    "COLUMN_NAMES": ["@CODE", "@CREATED_ON"],
+    "WHERE_CLAUSE": [],
+    "VALUES": "VALUES(?,?)",
+    "DOCUMENTATION": "Expected parameters in data field [CODE , CREATED_ON]"
+  },
+  {
+    "QUERY_NAME": "DELETE_USER",
+    "CRUD_TYPE": "UPDATE",
+    "TABLE_NAME": "TB_USER",
+    "COLUMN_NAMES": ["DELETED = 1 "," DELETED_BY = 'SYSTEM'"],
+    "WHERE_CLAUSE": ["@ID = ?"],
+    "DOCUMENTATION": "expected parameters in data field [ID]"
   }
 ]

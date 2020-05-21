@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import ekenya.co.ke.dbapiv3.enums.QueryEnum;
 import oracle.jdbc.OracleTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.NumberUtils;
 
 import javax.persistence.EntityManager;
 import java.io.*;
@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static ekenya.co.ke.dbapiv3.enums.QueryEnum.*;
 
 @Service
 public class DatabaseExtractorImpl implements DatabaseExtractor {
@@ -303,7 +302,6 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
         jsonArray.forEach(o -> parameterJoiner.add("?"));
 
         logger.info("JSON ARRAY "+jsonArray);
-
         stringBuilder.append("{CALL ").append(procedureName)
                 .append(parameterJoiner.toString()).append("}");
 
@@ -676,7 +674,10 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
     private void RowToJsonObjectMapper(String  value, JsonObject dataObject, String columnName) throws SQLException {
    //     String value = resultSet.getString(columnName);
 
+        logger.info("value"+value);
         if (value != null ){
+
+
             if (value.matches("[0-9]")){
                 dataObject.addProperty(columnName,Long.parseLong(value));
             }else{
@@ -715,6 +716,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                 String columnName = metaData.getColumnLabel(columnIndex);
                 logger.info("column name --- "+columnName);
                 String value = resultSet.getString(columnName);
+
                 RowToJsonObjectMapper(value, dataObject, columnName);
             }
 

@@ -36,7 +36,6 @@ public class ApiService {
         try {
             JsonArray response_array = databaseExtractor.executeSqlStatement(query, jsonArray);
 
-
             responseObject.addProperty("status", 200);
             responseObject.addProperty("message", "database execution was successful");
             responseObject.add("data",response_array);
@@ -166,12 +165,16 @@ public class ApiService {
     public Object executeSavedSqlStatements(String query){
         JsonObject queryObject = new JsonParser().parse(query).getAsJsonObject();
 
+        JsonObject responseObject = new JsonObject();
+
         // check if the query exists
         String queryName = queryObject.get("query").getAsString();
 
         JsonObject templateObject = findQueryTemplate(queryName);
 
         if (null != templateObject){
+
+            logger.info("template : "+templateObject);
 
             String crudType = templateObject.get("CRUD_TYPE").getAsString();
             JsonArray whereClause = templateObject.get("WHERE_CLAUSE").getAsJsonArray();
@@ -189,10 +192,9 @@ public class ApiService {
 
                 if (null != sqlTemplate){
                     // create the preparedStatement sql statement as required
-                    String prepared_statement_string = prepareSqlStatement(sqlTemplate, templateObject);
+                    String prepared_statement_string = prepareSqlStatement(sqlTemplate, templateObject, crudType);
 
                     //logger.info(prepared_statement_string);
-                    JsonArray jsonArray = new JsonArray();
 
 
                     List<String> values = validateDataFields(dataObject, columnNames, whereClause, false);
@@ -202,12 +204,29 @@ public class ApiService {
 
                     logger.info(prepared_statement_string);
                     logger.info("data - > "+jsonElement.toString());
-                    return prepared_statement_string;
+
+                    try {
+                        JsonArray response_array = databaseExtractor.executeSqlStatement(prepared_statement_string,
+                                jsonElement.getAsJsonArray());
+
+                        responseObject.addProperty("status", 200);
+                        responseObject.addProperty("message", "database execution was successful");
+                        responseObject.add("data",response_array);
+
+                    }catch (Exception e){
+                        responseObject.addProperty("status", 500);
+                        responseObject.addProperty("message", "error in database execution -> "+e.getMessage());
+                    }
+
+                    return responseObject.toString();
 
                 }else{
                     //TODO : RESPOND WITH  STATUS 500
 
-                    return 500;
+                    responseObject.addProperty("status", 500);
+                    responseObject.addProperty("message", "error in database execution -> sql template not found");
+
+                    return responseObject.toString();
                 }
 
             }else{
@@ -221,8 +240,12 @@ public class ApiService {
 
                 stringBuilder.append(stringJoiner.toString());
 
+                responseObject.addProperty("status", 404);
+                responseObject.addProperty("message", stringBuilder.toString());
+
+
                 //TODO : RESPOND WITH  STATUS 404
-                return stringBuilder.toString();
+                return responseObject.toString();
             }
 
             // find the template assosiated with the query before execution,
@@ -230,9 +253,11 @@ public class ApiService {
 
 
         }else{
-            // TODO : RESPOND WITH STATUS 404
-            return 404;
+            responseObject.addProperty("status", 404);
+            responseObject.addProperty("message", "query not found");
 
+            //TODO : RESPOND WITH  STATUS 404
+            return responseObject.toString();
         }
 
     }
@@ -335,9 +360,10 @@ public class ApiService {
      *
      * @param queryStringTemplate  -- this is the sql statement stored in the query-template.json
      * @param queryObjectTemplate -- this is the object that will be used to prepare the final sql statement
+     * @param crudType
      * @return
      */
-    String prepareSqlStatement(String queryStringTemplate, JsonObject queryObjectTemplate){
+    String prepareSqlStatement(String queryStringTemplate, JsonObject queryObjectTemplate, String crudType){
         Matcher m = Pattern.compile("\\{(.*?)\\}").matcher(queryStringTemplate);
         while(m.find()) {
             switch (m.group(1)){
@@ -369,9 +395,16 @@ public class ApiService {
                     JsonArray columnArray = queryObjectTemplate.get("COLUMN_NAMES").getAsJsonArray();
                     String column_names = constructStringFromArray(columnArray);
 
+                    logger.info("COLUMNS -> "+column_names);
+
                     column_names = column_names.replace("@","");
                     queryStringTemplate = queryStringTemplate.replace("{COLUMN_NAMES}",
                             column_names);
+                    break;
+
+                case "VALUES":
+                    String value = queryObjectTemplate.get("VALUES").getAsString();
+                    queryStringTemplate = queryStringTemplate.replace("{VALUES}", value);
                     break;
             }
             System.out.println(m.group(1));
@@ -381,9 +414,12 @@ public class ApiService {
     }
 
     String constructStringFromArray(JsonArray jsonArray){
+
         StringJoiner joiner = new StringJoiner(" , ","","");
 
         jsonArray.forEach(jsonElement -> joiner.add(jsonElement.getAsString()));
         return joiner.toString();
     }
+
+
 }
