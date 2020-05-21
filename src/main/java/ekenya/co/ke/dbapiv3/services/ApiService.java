@@ -1,15 +1,15 @@
-package ekenya.co.ke.dbapiv3;
+package ekenya.co.ke.dbapiv3.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import ekenya.co.ke.dbapiv3.enums.QueryEnum;
+import ekenya.co.ke.dbapiv3.DbApiV3Application;
+import ekenya.co.ke.dbapiv3.configuration.LoadConfiguration;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,8 @@ public class ApiService {
     private String primarydb;
     @Autowired private DatabaseExtractor databaseExtractor;
 
-    @Autowired LoadConfiguration loadConfiguration;
+    @Autowired
+    LoadConfiguration loadConfiguration;
 
     private final static Logger logger = Logger.getLogger(ApiService.class.getName());
 

@@ -1,9 +1,10 @@
-package ekenya.co.ke.dbapiv3;
+package ekenya.co.ke.dbapiv3.services;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import ekenya.co.ke.dbapiv3.DbApiV3Application;
 import oracle.jdbc.OracleTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,9 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.stereotype.Service;
-import org.springframework.util.NumberUtils;
 
-import javax.persistence.EntityManager;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;

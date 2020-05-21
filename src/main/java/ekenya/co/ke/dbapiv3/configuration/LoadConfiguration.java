@@ -1,20 +1,14 @@
-package ekenya.co.ke.dbapiv3;
+package ekenya.co.ke.dbapiv3.configuration;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
+import ekenya.co.ke.dbapiv3.DbApiV3Application;
+import ekenya.co.ke.dbapiv3.services.DatabaseExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionManager;
 
 import javax.annotation.Resource;
-import javax.sql.DataSource;
 import java.util.logging.Logger;
 
 //@Configuration

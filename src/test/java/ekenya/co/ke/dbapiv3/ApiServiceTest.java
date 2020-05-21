@@ -1,15 +1,16 @@
 package ekenya.co.ke.dbapiv3;
 
-import org.junit.jupiter.api.Test;
+import ekenya.co.ke.dbapiv3.configuration.LoadConfiguration;
+import ekenya.co.ke.dbapiv3.services.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 //@SpringBootTest
 class ApiServiceTest {
 
-    @Autowired LoadConfiguration loadConfiguration;
+    @Autowired
+    LoadConfiguration loadConfiguration;
     @Autowired private ApiService apiService;
 
   //  @Test

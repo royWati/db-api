@@ -1,4 +1,4 @@
-package ekenya.co.ke.dbapiv3;
+package ekenya.co.ke.dbapiv3.services;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

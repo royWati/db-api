@@ -1,6 +1,7 @@
 package ekenya.co.ke.dbapiv3;
 
 import com.google.gson.JsonElement;
+import ekenya.co.ke.dbapiv3.configuration.LoadConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

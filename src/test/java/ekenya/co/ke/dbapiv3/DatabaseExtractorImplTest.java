@@ -2,18 +2,22 @@ package ekenya.co.ke.dbapiv3;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.junit.jupiter.api.Test;
+import ekenya.co.ke.dbapiv3.configuration.LoadConfiguration;
+import ekenya.co.ke.dbapiv3.services.ApiService;
+import ekenya.co.ke.dbapiv3.services.DatabaseExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 //@SpringBootTest
 class DatabaseExtractorImplTest {
 
-    @Autowired DatabaseExtractor databaseExtractor;
-    @Autowired LoadConfiguration loadConfiguration;
-    @Autowired ApiService apiService;
+    @Autowired
+    DatabaseExtractor databaseExtractor;
+    @Autowired
+    LoadConfiguration loadConfiguration;
+    @Autowired
+    ApiService apiService;
    // @Test
     void executeSqlStatement() {
         loadConfiguration.updateQueryTemplate();
