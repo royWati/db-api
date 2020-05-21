@@ -30,6 +30,6 @@
     "TABLE_NAME": "TB_USER",
     "COLUMN_NAMES": ["DELETED = 1 "," DELETED_BY = 'SYSTEM'"],
     "WHERE_CLAUSE": ["@ID = ?"],
-    "DOCUMENTATION": "expected parameters in data field [ID]"
+    "DOCUMENTATION": "Expected parameters in data field [ID]"
   }
 ]

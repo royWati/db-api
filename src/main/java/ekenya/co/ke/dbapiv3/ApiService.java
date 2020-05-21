@@ -1,7 +1,15 @@
 package ekenya.co.ke.dbapiv3;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import ekenya.co.ke.dbapiv3.enums.QueryEnum;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -428,4 +436,43 @@ public class ApiService {
     }
 
 
+    public Object fetchDatabaseOperations() throws JsonProcessingException {
+
+        // refresh the application list cache in order to have the latest update of the list
+
+        loadConfiguration.updateQueryTemplate();
+
+        JsonArray dataArray = new JsonArray();
+        List<QueryDocumentation> queryDocumentations = new ArrayList<>();
+
+        for (JsonElement jsonElement :DbApiV3Application.sqlQueries.getAsJsonArray()){
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            QueryDocumentation documentation = new QueryDocumentation();
+            documentation.setParameters(jsonObject.get("DOCUMENTATION").getAsString());
+            documentation.setQuery(jsonObject.get("QUERY_NAME").getAsString());
+
+            queryDocumentations.add(documentation);
+
+        }
+        String doc = new ObjectMapper().writeValueAsString(queryDocumentations);
+        dataArray = new JsonParser().parse(doc).getAsJsonArray();
+
+        JsonObject responseObject = new JsonObject();
+        responseObject.addProperty("status",200);
+        responseObject.addProperty("message","database operations retrieved successfully");
+        responseObject.add("data",dataArray);
+
+        return responseObject.toString();
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    class QueryDocumentation{
+        private String query;
+        private String parameters;
+    }
 }
+
+
