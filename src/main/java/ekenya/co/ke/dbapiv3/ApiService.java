@@ -20,6 +20,8 @@ public class ApiService {
     private String primarydb;
     @Autowired private DatabaseExtractor databaseExtractor;
 
+    @Autowired LoadConfiguration loadConfiguration;
+
     private final static Logger logger = Logger.getLogger(ApiService.class.getName());
 
     private JsonParser jsonParser = new JsonParser();
@@ -133,7 +135,11 @@ public class ApiService {
         return responseObject.toString();
     }
 
-    public Object getStoredProcedures() {
+    public Object getStoredProcedures() throws Exception {
+
+        // update the application to refresh the database application before returning the results
+        loadConfiguration.updateSpListStore();
+
         JsonObject jsonObject = new JsonObject();
         try {
             JsonElement jsonElement = DbApiV3Application.spJsonElements;

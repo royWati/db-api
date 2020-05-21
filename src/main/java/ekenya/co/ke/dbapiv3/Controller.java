@@ -19,7 +19,7 @@ public class Controller {
         return apiService.executeStoredProcedure(query);
     }
     @PostMapping(value = "/db-api/fetch-stored-procedures", produces = "application/json")
-    public Object fetchStoredProcedures(){
+    public Object fetchStoredProcedures() throws Exception {
         return apiService.getStoredProcedures();
     }
     @PostMapping(value = "/db-api/execute-operation", produces = "application/json")
