@@ -34,7 +34,7 @@ class DatabaseExtractorImplTest {
         JsonObject templateObject = new JsonParser().parse(str_template).getAsJsonObject();
         String template = "";
         try {
-            template = apiService.prepareSqlStatement(query, templateObject, "INSERT");
+         //   template = apiService.prepareSqlStatement(query, templateObject, "INSERT", dataObject);
         } catch (Exception e) {
             e.printStackTrace();
         }

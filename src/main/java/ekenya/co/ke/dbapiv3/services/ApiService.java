@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -199,20 +200,51 @@ public class ApiService {
 
             JsonObject dataObject = queryObject.get("data").getAsJsonObject();
 
+            List<String> missingValues = new ArrayList<>();
 
-            List<String> missingValues = validateDataFields(dataObject,columnNames, whereClause, true );
+            // all select values contain page and size in order to limit huge datacall to the database
+            if ("SELECT".equals(crudType)){
+                String orderBy = templateObject.get("ORDER_STATEMENT").getAsString();
+                missingValues = validateDataFields(dataObject,columnNames, whereClause, true, orderBy );
+            }else if("SEARCH".equals(crudType)){
+
+                // search operation requires at least one filter, hence we validate to check if the fields are
+                // present
+                JsonArray likeArray = templateObject.get("LIKE").getAsJsonArray();
+                boolean hasSearchField = validateDataFields(dataObject, likeArray);
+
+                if (!hasSearchField){
+                    for (JsonElement element : likeArray){
+                        String str = element.getAsString();
+
+                        String field = str.split(":")[1];
+
+                        missingValues.add(field);
+                    }
+                }
+            }else {
+                 missingValues = validateDataFields(dataObject,columnNames, whereClause, true , null);
+            }
+
 
             if (missingValues.size() == 0 ){ // validation was successful
                 String sqlTemplate = loadSqlTemplate(crudType);
 
                 if (null != sqlTemplate){
                     // create the preparedStatement sql statement as required
-                    String prepared_statement_string = prepareSqlStatement(sqlTemplate, templateObject, crudType);
+                    String prepared_statement_string = prepareSqlStatement(sqlTemplate, templateObject, crudType, dataObject);
 
                     //logger.info(prepared_statement_string);
 
+                    List<String> values = new ArrayList<>();
 
-                    List<String> values = validateDataFields(dataObject, columnNames, whereClause, false);
+                    if ("SELECT".equals(crudType)){
+                        String orderBy = templateObject.get("ORDER_STATEMENT").getAsString();
+                        values = validateDataFields(dataObject,columnNames, whereClause, false, orderBy );
+                    }else {
+                        values = validateDataFields(dataObject,columnNames, whereClause, false , null);
+                    }
+
 
                     Gson gson = new Gson();
                     JsonElement jsonElement = gson.toJsonTree(values , new TypeToken<List<String>>(){}.getType());
@@ -249,7 +281,11 @@ public class ApiService {
                 StringJoiner stringJoiner = new StringJoiner(",","[","]");
                 StringBuilder stringBuilder = new StringBuilder();
 
-                stringBuilder.append("missing the following fields");
+                if ("SEARCH".equals(crudType)){
+                    stringBuilder.append("search operation requires atleast one or more of the following fields");
+                }else{
+                    stringBuilder.append("missing the following fields");
+                }
 
                 missingValues.forEach(stringJoiner::add);
 
@@ -276,6 +312,8 @@ public class ApiService {
         }
 
     }
+
+
 
 
     JsonObject findQueryTemplate(String queryName){
@@ -319,8 +357,25 @@ public class ApiService {
         return found ? object : null;
     }
 
+    // validate the fields for search
+    private boolean validateDataFields(JsonObject dataObject, JsonArray likeArray) {
+        boolean fieldFound = false;
+
+        for (JsonElement element : likeArray ){
+            String str = element.getAsString();
+
+            String[] split_str = str.split(":");
+            String key = split_str[1];
+
+            if (dataObject.has(key)) fieldFound = true;
+        }
+
+        return fieldFound;
+    }
+
     @SuppressWarnings("Duplicates")
-    List<String> validateDataFields(JsonObject dataObject, JsonArray columnNames, JsonArray whereClause,boolean validate){
+    List<String> validateDataFields(JsonObject dataObject, JsonArray columnNames, JsonArray whereClause
+            , boolean validate, @Nullable String orderBy){
 
         List<String> missingValues = new ArrayList<>();
 
@@ -331,7 +386,10 @@ public class ApiService {
 
             String[] split_string = str.split(" ");
 
-            for (String s : split_string) {
+            logger.info("FIRST VALUE : "+split_string[0]);
+
+            String s = split_string[0];
+
                 if (s.contains("@")){
                     String key = s.replace("@","");
 
@@ -344,7 +402,7 @@ public class ApiService {
                     }
 
                 }
-            }
+
 
         }
         // validate the where clause
@@ -353,7 +411,12 @@ public class ApiService {
             String str = element.getAsString();
             String[] split_string = str.split(" ");
 
-            for (String s : split_string) {
+            logger.info("FIRST VALUE : "+split_string[0]);
+
+            String s = split_string[0];
+
+
+                //required field search
                 if (s.contains("@")){
                     String key = s.replace("@","");
 
@@ -363,9 +426,51 @@ public class ApiService {
                         String value = dataObject.get(key).getAsString();
                         missingValues.add(value);
                     }
+                }else{ // optional field found
+
+
+                    String key = s.replace("OPTIONAL:","");
+
+                    logger.info("OPTIONAL VALUE FOUND : "+key);
+
+                    // validation does not take place on optional values hence next set of logic only applies to adding
+                    // values to be used by the prepared statement
+
+                    if (!validate){
+                        // check if the optional value is present in the data object
+                        if (dataObject.has(key)){
+                            String value = dataObject.get(key).getAsString();
+                            missingValues.add(value);
+                        }
+                    }
+                }
+
+
+        }
+        // inspecting the offset elements of the code
+        if (null != orderBy){
+            Matcher findOffsets = Pattern.compile("\\((.*?)\\)").matcher(orderBy);
+
+            while(findOffsets.find()) {
+                switch (findOffsets.group(1)){
+                    case "@PAGE":
+                        if(validate){
+                            if (!dataObject.has("PAGE")) missingValues.add("PAGE");
+                        }else{
+                            String value = dataObject.get("PAGE").getAsString();
+                            missingValues.add(value);
+                        }
+                        break;
+                    case "@SIZE":
+                        if(validate){
+                            if (!dataObject.has("SIZE")) missingValues.add("SIZE");
+                        }else{
+                            String value = dataObject.get("SIZE").getAsString();
+                            missingValues.add(value);
+                        }
+                        break;
                 }
             }
-
         }
 
         return missingValues;
@@ -376,9 +481,11 @@ public class ApiService {
      * @param queryStringTemplate  -- this is the sql statement stored in the query-template.json
      * @param queryObjectTemplate -- this is the object that will be used to prepare the final sql statement
      * @param crudType
+     * @param dataObject -- this will be used to validate the request for optional values
      * @return
      */
-    String prepareSqlStatement(String queryStringTemplate, JsonObject queryObjectTemplate, String crudType){
+    public String prepareSqlStatement(String queryStringTemplate, JsonObject queryObjectTemplate,
+                                      String crudType, JsonObject dataObject){
         Matcher m = Pattern.compile("\\{(.*?)\\}").matcher(queryStringTemplate);
         while(m.find()) {
             switch (m.group(1)){
@@ -393,18 +500,31 @@ public class ApiService {
                     break;
                 case "WHERE_CLAUSE":
                     JsonArray whereArray = queryObjectTemplate.get("WHERE_CLAUSE").getAsJsonArray();
-                    String where_clause = constructStringFromArray(whereArray);
+                    String where_clause = constructStringFromArray(whereArray, dataObject);
 
-                    where_clause = "WHERE "+where_clause;
+                    logger.info("CONSTRUCTED WHERE CLAUSE : "+where_clause);
 
+                    //
+                    if (whereArray.size() > 0){
+                        if (where_clause.contains("OPTIONAL:") || where_clause.contains("@")){
+                            where_clause = "WHERE "+where_clause;
+                        }
+                    }
+
+
+                    // replace the required fields
                     where_clause = where_clause.replace("@","");
+
+                    // replacing the optional fields
+                    where_clause = where_clause.replace("OPTIONAL:","");
                     queryStringTemplate = queryStringTemplate.replace("{WHERE_CLAUSE}",where_clause);
                     break;
                 case "GROUP_STATEMENT":
-                    String group_statement = queryObjectTemplate.get("GROUP_STATEMENT").getAsString();
-                    group_statement = group_statement.replace("@","");
+                    JsonArray group_array = queryObjectTemplate.get("GROUP_STATEMENT").getAsJsonArray();
+                    String groups = constructStringFromArray(group_array);
+                    groups = groups.replace("@","");
                     queryStringTemplate = queryStringTemplate.replace("{GROUP_STATEMENT}",
-                            group_statement);
+                            groups);
                     break;
                 case "COLUMN_NAMES":
                     JsonArray columnArray = queryObjectTemplate.get("COLUMN_NAMES").getAsJsonArray();
@@ -421,11 +541,46 @@ public class ApiService {
                     String value = queryObjectTemplate.get("VALUES").getAsString();
                     queryStringTemplate = queryStringTemplate.replace("{VALUES}", value);
                     break;
+
+                case "ORDER_STATEMENT":
+                    String order_value = queryObjectTemplate.get("ORDER_STATEMENT").getAsString();
+
+                    order_value = order_value.replace("(@PAGE)","?");
+                    order_value = order_value.replace("(@SIZE)","?");
+
+                    queryStringTemplate = queryStringTemplate.replace("{ORDER_STATEMENT}", order_value);
+                    break;
             }
             System.out.println(m.group(1));
         }
 
         return queryStringTemplate;
+    }
+
+    private String constructStringFromArray(JsonArray whereArray, JsonObject dataObject) {
+        StringJoiner joiner = new StringJoiner(" AND ","","");
+
+        logger.info("clause data: "+dataObject);
+        whereArray.forEach(jsonElement ->{
+            // check if the value contains optional string
+            String s = jsonElement.getAsString();
+
+            logger.info("clause : "+s);
+
+
+            if (s.contains("OPTIONAL")){
+                String fieldChecker = s.split(":")[1];
+
+                logger.info("field checker : "+fieldChecker);
+                if (dataObject.has(fieldChecker.split(" ")[0])){
+                    joiner.add(s);
+                }
+            }else{
+                joiner.add(s);
+            }
+        } );
+
+        return joiner.toString();
     }
 
     String constructStringFromArray(JsonArray jsonArray){
@@ -450,8 +605,18 @@ public class ApiService {
             JsonObject jsonObject = jsonElement.getAsJsonObject();
 
             QueryDocumentation documentation = new QueryDocumentation();
-            documentation.setParameters(jsonObject.get("DOCUMENTATION").getAsString());
+            documentation.setDoc(jsonObject.get("DOCUMENTATION").getAsString());
             documentation.setQuery(jsonObject.get("QUERY_NAME").getAsString());
+
+            if (jsonObject.has("FILTERS")){
+                JsonArray jsonArray = jsonObject.get("FILTERS").getAsJsonArray();
+
+                List<String> list =  new ArrayList<>();
+                jsonArray.forEach(jsonElement1 -> list.add(jsonElement1.getAsString()));
+                documentation.setFilters(list);
+            }else {
+                documentation.setFilters(new ArrayList<>());
+            }
 
             queryDocumentations.add(documentation);
 
@@ -472,7 +637,8 @@ public class ApiService {
     @AllArgsConstructor
     class QueryDocumentation{
         private String query;
-        private String parameters;
+        private String doc;
+        private List<String> filters;
     }
 }
 
