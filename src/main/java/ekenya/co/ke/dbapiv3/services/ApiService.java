@@ -504,13 +504,13 @@ public class ApiService {
 
                     logger.info("CONSTRUCTED WHERE CLAUSE : "+where_clause);
 
-                    //
-                    if (whereArray.size() > 0){
-                        if (where_clause.contains("OPTIONAL:") || where_clause.contains("@")){
-                            where_clause = "WHERE "+where_clause;
-                        }
+                    /**
+                     * check if the where_clause contains an '=' sign, this is to justify the existance of
+                     * a where clause in the string
+                     */
+                    if (where_clause.contains("=")){
+                        where_clause = "WHERE "+where_clause;
                     }
-
 
                     // replace the required fields
                     where_clause = where_clause.replace("@","");

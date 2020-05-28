@@ -680,7 +680,16 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
             if (value.matches("[0-9]")){
                 dataObject.addProperty(columnName,Long.parseLong(value));
             }else{
-                dataObject.addProperty(columnName,value);
+
+               try{
+                   JsonElement element = new JsonParser().parse(value);
+
+                   if (element instanceof JsonArray || element instanceof JsonObject) dataObject.add(columnName, element);
+                   else dataObject.addProperty(columnName, value);
+               }catch (Exception e ){
+                   dataObject.addProperty(columnName,value);
+               }
+
             }
         }else{
             dataObject.addProperty(columnName, "null");
