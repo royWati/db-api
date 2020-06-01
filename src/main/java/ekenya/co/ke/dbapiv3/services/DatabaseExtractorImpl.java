@@ -282,7 +282,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
         for (int i = 0; i< jsonArray.size() ; i++){
             JsonObject object = jsonArray.get(i).getAsJsonObject();
-            logger.info("object - "+object);
+       //     logger.info("object - "+object);
 
             if (procedureName.equals(object.get("procedure_name").getAsString())){
                 jsonObject = object;
