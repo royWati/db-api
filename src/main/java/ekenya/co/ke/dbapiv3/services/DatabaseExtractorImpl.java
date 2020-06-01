@@ -722,7 +722,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                 int columnIndex = i+1;
                 String columnName = metaData.getColumnLabel(columnIndex);
-                logger.info("column name --- "+columnName);
+         //       logger.info("column name --- "+columnName);
                 String value = resultSet.getString(columnName);
 
                 RowToJsonObjectMapper(value, dataObject, columnName);
