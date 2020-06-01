@@ -673,7 +673,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
     private void RowToJsonObjectMapper(String  value, JsonObject dataObject, String columnName) throws SQLException {
    //     String value = resultSet.getString(columnName);
 
-        logger.info("value"+value);
+  //      logger.info("value"+value);
         if (value != null ){
 
 
