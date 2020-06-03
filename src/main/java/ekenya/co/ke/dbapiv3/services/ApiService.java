@@ -401,6 +401,15 @@ public class ApiService {
                         missingValues.add(value);
                     }
 
+                }else if (s.contains("OPTIONAL")){
+                    String key = s.replace("OPTIONAL:","");
+                    if (!validate){
+                        // check if the optional value is present in the data object
+                        if (dataObject.has(key)){
+                            String value = dataObject.get(key).getAsString();
+                            missingValues.add(value);
+                        }
+                    }
                 }
         }
         // validate the where clause
@@ -424,7 +433,7 @@ public class ApiService {
                         String value = dataObject.get(key).getAsString();
                         missingValues.add(value);
                     }
-                }else{ // optional field found
+                }else if (s.contains("OPTIONAL:")){ // optional field found
 
 
                     String key = s.replace("OPTIONAL:","");
@@ -498,7 +507,7 @@ public class ApiService {
                     break;
                 case "WHERE_CLAUSE":
                     JsonArray whereArray = queryObjectTemplate.get("WHERE_CLAUSE").getAsJsonArray();
-                    String where_clause = constructStringFromArray(whereArray, dataObject);
+                    String where_clause = constructStringFromArray(whereArray, dataObject," AND ");
 
                     logger.info("CONSTRUCTED WHERE CLAUSE : "+where_clause);
 
@@ -526,13 +535,14 @@ public class ApiService {
                     break;
                 case "COLUMN_NAMES":
                     JsonArray columnArray = queryObjectTemplate.get("COLUMN_NAMES").getAsJsonArray();
-                    String column_names = constructStringFromArray(columnArray, dataObject);
+                    String column_names = constructStringFromArray(columnArray, dataObject," , ");
 
                     logger.info("COLUMNS -> "+column_names);
 
                     column_names = column_names.replace("@","");
-
                     column_names = column_names.replace("OPTIONAL:","");
+
+               //     column_names = column_names.replace("OPTIONAL:","");
                     queryStringTemplate = queryStringTemplate.replace("{COLUMN_NAMES}",
                             column_names);
                     break;
@@ -557,16 +567,16 @@ public class ApiService {
         return queryStringTemplate;
     }
 
-    private String constructStringFromArray(JsonArray whereArray, JsonObject dataObject) {
-        StringJoiner joiner = new StringJoiner(" AND ","","");
+    private String constructStringFromArray(JsonArray whereArray, JsonObject dataObject, String delimeter) {
+        StringJoiner joiner = new StringJoiner(delimeter,"","");
 
+        // " AND "
         logger.info("clause data: "+dataObject);
         whereArray.forEach(jsonElement ->{
             // check if the value contains optional string
             String s = jsonElement.getAsString();
 
             logger.info("clause : "+s);
-
 
             if (s.contains("OPTIONAL")){
                 String fieldChecker = s.split(":")[1];
@@ -578,7 +588,7 @@ public class ApiService {
             }else{
                 joiner.add(s);
             }
-        } );
+        });
 
         return joiner.toString();
     }
@@ -588,6 +598,33 @@ public class ApiService {
         StringJoiner joiner = new StringJoiner(" , ","","");
 
         jsonArray.forEach(jsonElement -> joiner.add(jsonElement.getAsString()));
+        return joiner.toString();
+    }
+
+    String constructStringFromArray_Columns(JsonArray jsonArray, JsonObject dataObject){
+        StringJoiner joiner = new StringJoiner(" , ","","");
+
+        logger.info("clause data: "+dataObject);
+        logger.info("json array data: "+jsonArray);
+
+        jsonArray.forEach(jsonElement ->{
+            // check if the value contains optional string
+            String s = jsonElement.getAsString();
+
+            logger.info("clause : "+s);
+
+            if (s.contains("OPTIONAL")){
+                String fieldChecker = s.split(":")[1];
+
+                logger.info("field checker : "+fieldChecker);
+                if (dataObject.has(fieldChecker.split(" ")[0])){
+                    joiner.add(s);
+                }
+            }else{
+                joiner.add(s);
+            }
+        });
+
         return joiner.toString();
     }
 

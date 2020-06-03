@@ -592,7 +592,11 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                                   boolean executeUpdate) throws Exception {
         if (executeUpdate){
             try {
-                jdbcTemplate.update(preparedStatementCreator1);
+                int affected_rows = jdbcTemplate.update(preparedStatementCreator1);
+
+                String affected_rows_str = affected_rows + " affected rows";
+
+
             }catch (Exception e){
                 logger.info("ERROR IN EXECUTING UPDATE : "+e.getMessage());
                 throw new Exception(e.getMessage());
@@ -601,7 +605,6 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
         }else{
             jdbcTemplate.query(preparedStatementCreator1,resultSet -> {
                 if (!resultSet.isClosed()){
-
                     try {
 
                         logger.info("result set size : "+resultSet.getFetchSize());
