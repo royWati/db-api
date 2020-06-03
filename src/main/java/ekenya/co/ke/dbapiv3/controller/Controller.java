@@ -32,5 +32,4 @@ public class Controller {
     public Object fetchDatabaseOperations() throws JsonProcessingException {
         return apiService.fetchDatabaseOperations();
     }
-
 }

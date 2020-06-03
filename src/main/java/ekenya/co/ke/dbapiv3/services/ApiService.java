@@ -402,8 +402,6 @@ public class ApiService {
                     }
 
                 }
-
-
         }
         // validate the where clause
 
@@ -528,11 +526,13 @@ public class ApiService {
                     break;
                 case "COLUMN_NAMES":
                     JsonArray columnArray = queryObjectTemplate.get("COLUMN_NAMES").getAsJsonArray();
-                    String column_names = constructStringFromArray(columnArray);
+                    String column_names = constructStringFromArray(columnArray, dataObject);
 
                     logger.info("COLUMNS -> "+column_names);
 
                     column_names = column_names.replace("@","");
+
+                    column_names = column_names.replace("OPTIONAL:","");
                     queryStringTemplate = queryStringTemplate.replace("{COLUMN_NAMES}",
                             column_names);
                     break;
