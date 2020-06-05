@@ -405,12 +405,7 @@ public class ApiService {
                     String key = s.replace("OPTIONAL:","");
 
                     if (!validate){
-                        /**
-                         * check if the optional value maps to a relational column e.g mapping to
-                         * dates columns : OPTIONAL:FROM->CREATED_ON > ? , OPTIONAL:TO->CREATED_ON < ?
-                         *
-                         */
-                        key = key.split("->")[0];
+
 
                         // check if the optional value is present in the data object
                         if (dataObject.has(key)){
@@ -450,6 +445,15 @@ public class ApiService {
 
                     // validation does not take place on optional values hence next set of logic only applies to adding
                     // values to be used by the prepared statement
+                    /**
+                     * check if the optional value maps to a relational column e.g mapping to
+                     * dates columns : OPTIONAL:FROM->CREATED_ON > ? , OPTIONAL:TO->CREATED_ON < ?
+                     *
+                     */
+                    logger.info("value key "+key);
+                    key = key.split("->")[0];
+
+                    logger.info("key -> "+key);
 
                     if (!validate){
                         // check if the optional value is present in the data object
