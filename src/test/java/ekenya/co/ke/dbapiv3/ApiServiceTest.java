@@ -22,7 +22,7 @@ class ApiServiceTest {
         String finalQuery = "INSERT INTO TB_PROCESSING_CODES (CODE , CREATED_ON) VALUES(?,?)";
 
         finalQuery = "SELECT ID, DATE_OF_BIRTH, CREATED_ON FROM VW_ALLCUSTOMERS WHERE ID = ? AND ACCOUNT_NO = ? " +
-                "CREATED_ON > ? AND CREATED_ON < ?" +
+                "CREATED_ON > ? AND CREATED_ON < ? GROUP BY FIELD100,PAYMENT_NUMBER " +
                 "ORDER BY ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         String query = "{\n" +
                 "    \"query\": \"VIEW_CUSTOMERS_TEST\",\n" +

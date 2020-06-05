@@ -536,8 +536,12 @@ public class ApiService {
                     break;
                 case "GROUP_STATEMENT":
                     JsonArray group_array = queryObjectTemplate.get("GROUP_STATEMENT").getAsJsonArray();
-                    String groups = constructStringFromArray(group_array);
+                    String groups = constructStringFromArray(group_array,",");
                     groups = groups.replace("@","");
+
+                    if (group_array.size() > 0){
+                        groups = "GROUP BY "+groups;
+                    }
                     queryStringTemplate = queryStringTemplate.replace("{GROUP_STATEMENT}",
                             groups);
                     break;
@@ -614,9 +618,9 @@ public class ApiService {
         return joiner.toString();
     }
 
-    String constructStringFromArray(JsonArray jsonArray){
+    String constructStringFromArray(JsonArray jsonArray, String delimeter){
 
-        StringJoiner joiner = new StringJoiner(" , ","","");
+        StringJoiner joiner = new StringJoiner(delimeter," "," ");
 
         jsonArray.forEach(jsonElement -> joiner.add(jsonElement.getAsString()));
         return joiner.toString();
