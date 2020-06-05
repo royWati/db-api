@@ -594,8 +594,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
             try {
                 int affected_rows = jdbcTemplate.update(preparedStatementCreator1);
 
-                String affected_rows_str = affected_rows + " affected rows";
-
+                parameter_array.add(affected_rows);
 
             }catch (Exception e){
                 logger.info("ERROR IN EXECUTING UPDATE : "+e.getMessage());

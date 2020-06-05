@@ -403,7 +403,15 @@ public class ApiService {
 
                 }else if (s.contains("OPTIONAL")){
                     String key = s.replace("OPTIONAL:","");
+
                     if (!validate){
+                        /**
+                         * check if the optional value maps to a relational column e.g mapping to
+                         * dates columns : OPTIONAL:FROM->CREATED_ON > ? , OPTIONAL:TO->CREATED_ON < ?
+                         *
+                         */
+                        key = key.split("->")[0];
+
                         // check if the optional value is present in the data object
                         if (dataObject.has(key)){
                             String value = dataObject.get(key).getAsString();
@@ -581,9 +589,22 @@ public class ApiService {
             if (s.contains("OPTIONAL")){
                 String fieldChecker = s.split(":")[1];
 
+                boolean hasMoreMapping = false;  // this is to be used to map the correct value
+
+                if (fieldChecker.contains("->")){
+                    fieldChecker = fieldChecker.split("->")[0];
+                    hasMoreMapping = true;
+                }
+
                 logger.info("field checker : "+fieldChecker);
-                if (dataObject.has(fieldChecker.split(" ")[0])){
-                    joiner.add(s);
+                if (dataObject.has(fieldChecker.split(" ")[0])){  // the split is to enable get the first value
+
+                    if (hasMoreMapping){
+                        joiner.add(s.split("->")[1]);
+                    }else{
+                        joiner.add(s);
+                    }
+
                 }
             }else{
                 joiner.add(s);
