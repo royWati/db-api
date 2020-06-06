@@ -490,7 +490,10 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
         boolean executeUpdate = false;
         // check if the statement contains update
-        if(sqlStatement.toLowerCase().contains("update") || sqlStatement.toLowerCase().contains("insert")){
+
+        String execute_type = sqlStatement.toLowerCase().split(" ")[0];
+
+        if("update".equals(execute_type) || "insert".equals(execute_type)){
             executeUpdate = true;
         }
 

@@ -8,14 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-  @SpringBootTest
+ // @SpringBootTest
 class ApiServiceTest {
 
     @Autowired
     LoadConfiguration loadConfiguration;
     @Autowired private ApiService apiService;
 
-    @Test
+   // @Test
     void executeSavedSqlStatements() {
         loadConfiguration.updateQueryTemplate();
 

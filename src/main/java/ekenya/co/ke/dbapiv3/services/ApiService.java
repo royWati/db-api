@@ -463,8 +463,6 @@ public class ApiService {
                         }
                     }
                 }
-
-
         }
         // inspecting the offset elements of the code
         if (null != orderBy){
