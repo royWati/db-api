@@ -17,7 +17,7 @@ public class DbApiV3Application {
 
     @Autowired private LoadConfiguration loadConfiguration;
 
-    public static void main(String[] args) {
+        public static void main(String[] args) {
         SpringApplication.run(DbApiV3Application.class, args);
     }
 

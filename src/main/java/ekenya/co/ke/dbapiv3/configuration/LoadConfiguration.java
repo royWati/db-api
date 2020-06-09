@@ -38,8 +38,8 @@ public class LoadConfiguration {
          DbApiV3Application.queryTemplate = databaseExtractor.retrieveFileContent(fileName);
          DbApiV3Application.sqlQueries = databaseExtractor.retrieveFileContent(queryData);
 
-        logger.info(DbApiV3Application.queryTemplate.toString());
-        logger.info(DbApiV3Application.sqlQueries.toString());
+   //     logger.info(DbApiV3Application.queryTemplate.toString());
+   //     logger.info(DbApiV3Application.sqlQueries.toString());
 
     }
 
