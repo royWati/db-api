@@ -8,31 +8,27 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
- // @SpringBootTest
+  @SpringBootTest
 class ApiServiceTest {
 
     @Autowired
     LoadConfiguration loadConfiguration;
     @Autowired private ApiService apiService;
 
-   // @Test
+    @Test
     void executeSavedSqlStatements() {
         loadConfiguration.updateQueryTemplate();
 
         String finalQuery = "INSERT INTO TB_PROCESSING_CODES (CODE , CREATED_ON) VALUES(?,?)";
 
-        finalQuery = "SELECT ID, DATE_OF_BIRTH, CREATED_ON FROM VW_ALLCUSTOMERS WHERE ID = ? AND ACCOUNT_NO = ? " +
-                "CREATED_ON > ? AND CREATED_ON < ? GROUP BY FIELD100,PAYMENT_NUMBER " +
+        finalQuery = "SELECT ID, FIELD37, DATEX FROM TB_MESSAGES_EXTERNAL WHERE FIELD3 = ? AND FIELD3 NOT IN ('150000','320000','360000') " +
                 "ORDER BY ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         String query = "{\n" +
-                "    \"query\": \"VIEW_CUSTOMERS_TEST\",\n" +
+                "    \"query\": \"VIEW_ALL_TRANSACTIONS\",\n" +
                 "    \"data\": {\n" +
                 "        \"PAGE\": \"0\",\n" +
-                "        \"SIZE\": \"20\",\n" +
-                "        \"ACCOUNT_NO\": \"13456768\",\n" +
-                "        \"FROM\": \"2020-09-20\",\n" +
-                "        \"TO\": \"2020-10-20\",\n" +
-                "        \"ID\": \"1\"\n" +
+                "        \"FIELD3\": \"310000\",\n" +
+                "        \"SIZE\": \"10\"\n" +
                 "    }\n" +
                 "}";
         String s = String.valueOf(apiService.executeSavedSqlStatements(query)) ;

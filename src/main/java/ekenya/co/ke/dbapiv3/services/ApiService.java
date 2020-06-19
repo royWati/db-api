@@ -218,7 +218,6 @@ public class ApiService {
                         String str = element.getAsString();
 
                         String field = str.split(":")[1];
-
                         missingValues.add(field);
                     }
                 }
@@ -298,11 +297,7 @@ public class ApiService {
                 //TODO : RESPOND WITH  STATUS 404
                 return responseObject.toString();
             }
-
             // find the template assosiated with the query before execution,
-
-
-
         }else{
             responseObject.addProperty("status", 404);
             responseObject.addProperty("message", "query not found");
@@ -312,9 +307,6 @@ public class ApiService {
         }
 
     }
-
-
-
 
     JsonObject findQueryTemplate(String queryName){
         JsonArray jsonArray = DbApiV3Application.sqlQueries.getAsJsonArray();
@@ -524,8 +516,10 @@ public class ApiService {
                     /**
                      * check if the where_clause contains an '=' sign, this is to justify the existance of
                      * a where clause in the string
+                     *
+                     * also check for existance of in
                      */
-                    if (where_clause.contains("=")){
+                    if (where_clause.contains("=") || where_clause.contains(" IN ")){
                         where_clause = "WHERE "+where_clause;
                     }
 
