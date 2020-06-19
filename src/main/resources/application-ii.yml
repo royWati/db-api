@@ -37,7 +37,7 @@ eureka:
 #    secure-port-enabled: true
 #    secure-port: ${server.port}
 
-primarydb: oracle
+primarydb: mssql
 schema-name: EBANK
 
 file-storage:

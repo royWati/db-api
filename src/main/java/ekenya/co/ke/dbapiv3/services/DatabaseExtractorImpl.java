@@ -54,7 +54,8 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                 sql_parameters = "SELECT ORDINAL_POSITION as parameterPosition,\n" +
                         "DATA_TYPE as dataType,\n" +
-                        "PARAMETER_NAME as parameterName\n" +
+                        "PARAMETER_NAME as parameterName,\n" +
+                        "PARAMETER_MODE as in_out \n" +
                         "FROM information_schema.parameters \n" +
                         "WHERE SPECIFIC_NAME = ? ";
                 break;
@@ -87,6 +88,9 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
         // prepare the statement for execution
         String finalSql = sql;
+
+        logger.info("PROCEDURE : "+finalSql);
+        logger.info("PARAMETERS : "+sql_parameters);
 
         //jdbcTemplate.queryForList(finalSql).forEach(System.out::println);
         PreparedStatementCreator preparedStatementCreator = connection -> {

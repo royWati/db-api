@@ -1,7 +1,9 @@
 package ekenya.co.ke.dbapiv3;
 
+import com.google.gson.JsonArray;
 import ekenya.co.ke.dbapiv3.configuration.LoadConfiguration;
 import ekenya.co.ke.dbapiv3.services.ApiService;
+import ekenya.co.ke.dbapiv3.services.DatabaseExtractor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +17,9 @@ class ApiServiceTest {
     LoadConfiguration loadConfiguration;
     @Autowired private ApiService apiService;
 
-    @Test
+    @Autowired private DatabaseExtractor databaseExtractor;
+
+ //   @Test
     void executeSavedSqlStatements() {
         loadConfiguration.updateQueryTemplate();
 
@@ -33,5 +37,13 @@ class ApiServiceTest {
                 "}";
         String s = String.valueOf(apiService.executeSavedSqlStatements(query)) ;
         assertEquals(finalQuery, s);
+    }
+
+    @Test
+     void testStoredProcedures() throws Exception {
+        String json_string = "[]";
+
+        assertEquals(json_string, databaseExtractor.fetchSqlProcedures().toString());
+
     }
 }
