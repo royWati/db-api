@@ -1,0 +1,21 @@
+0000000000000000000000000000000000000000 6c2ae70e8b61213b4f330da7e1b3770ff5fc64cd Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1589995568 +0300	commit (initial): sql statement automation
+6c2ae70e8b61213b4f330da7e1b3770ff5fc64cd 6c2ae70e8b61213b4f330da7e1b3770ff5fc64cd Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1589995797 +0300	checkout: moving from master to version-3
+6c2ae70e8b61213b4f330da7e1b3770ff5fc64cd e7a09209b6e3ca137748a2662b79a19897a92ac8 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1589995934 +0300	commit: sql automation code update
+e7a09209b6e3ca137748a2662b79a19897a92ac8 d0be82934272ca77b5bce1d2882b1b2a0bd42fb8 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1590057335 +0300	commit: sql automation update. integration with databaseExecutor
+d0be82934272ca77b5bce1d2882b1b2a0bd42fb8 096eeaf4bf3002e7c4474edf96efa86a5dd37e92 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1590057590 +0300	commit: refresh the sp store list through /fetch-stored-procedures api
+096eeaf4bf3002e7c4474edf96efa86a5dd37e92 30f0746066ec3273a757b7c9016ddbde058fc9d1 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1590059014 +0300	commit: fetch all database operations
+30f0746066ec3273a757b7c9016ddbde058fc9d1 f4a4c7c6f0409ce8250fee719648556557e80726 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1590060972 +0300	commit: package classes
+f4a4c7c6f0409ce8250fee719648556557e80726 fd4f6c4a9dd9bc8eb4502121b4d6d1f93e6752e6 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1590615272 +0300	commit: update on the processing of where clause
+fd4f6c4a9dd9bc8eb4502121b4d6d1f93e6752e6 c2d22c793bcc3a4d7495c288d88baea736f5449b Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1590686962 +0300	commit: update on formatting messages containing json objects and json arrays
+c2d22c793bcc3a4d7495c288d88baea736f5449b 29f11a78fb21f87eb2c9186d941e271be15df7d6 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591022155 +0300	commit: removal of log line for all values to reduce on the size of logs
+29f11a78fb21f87eb2c9186d941e271be15df7d6 9b95c88e556229c0827580a6b8955aea98b6ad9a Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591022395 +0300	commit: removal of log line for all columns to reduce on the size of logs
+9b95c88e556229c0827580a6b8955aea98b6ad9a bfce6eb37c8aedb271fad8fefa311b763be439c3 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591022752 +0300	commit: removal of log line for loop sp to reduce on the size of logs
+bfce6eb37c8aedb271fad8fefa311b763be439c3 b9ef7d91d4d8dc49ef7260b1a8aa95e5e6963da3 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591221478 +0300	commit: update on the column filter for optional
+b9ef7d91d4d8dc49ef7260b1a8aa95e5e6963da3 f6007c4b95984e73bb471eebb88837c27c48e701 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591226380 +0300	commit: update on processing column names with optionals and databuilder checker
+f6007c4b95984e73bb471eebb88837c27c48e701 05ac7983cb3c1c635d95ac206ff5717bd317abc1 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591380450 +0300	commit: add mapping for multiple values key values to single column in db. for reports
+05ac7983cb3c1c635d95ac206ff5717bd317abc1 df36994406cedfcb0ca7b0da3fd856bfab1ed15c Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591382665 +0300	commit: process group by statement
+df36994406cedfcb0ca7b0da3fd856bfab1ed15c ca739fb404e5e7d300953985de7341242effd40f Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591388339 +0300	commit: bug fix for where clause on group clause
+ca739fb404e5e7d300953985de7341242effd40f 9c548c9ce69e32d086db8e8a7328e3d0bef685ff Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591461468 +0300	commit: update executeSqlStatement method to check the execute type
+9c548c9ce69e32d086db8e8a7328e3d0bef685ff a2c3ce4e2da6b3ec94cc856b45b62275bf02867a Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1591705150 +0300	commit: log managament
+a2c3ce4e2da6b3ec94cc856b45b62275bf02867a f0f5418615d9660817b957b2b04746a52ae36ab0 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1592556785 +0300	commit: update for where clause to process requests
+f0f5418615d9660817b957b2b04746a52ae36ab0 e5f63f66768b58a15803f2620237a53ef45cd011 Roy Wati Munialo <rwati@hq.ekenya.co.ke> 1592564777 +0300	commit: update on selection query for sql sp parameters

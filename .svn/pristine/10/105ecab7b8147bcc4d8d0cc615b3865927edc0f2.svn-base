@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: ekenya.co.ke.dbapiv3.ApiServiceTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 13.331 s <<< FAILURE! - in ekenya.co.ke.dbapiv3.ApiServiceTest
+testStoredProcedures  Time elapsed: 0.271 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <[]> but was: <[{"procedure_name":"A_SP_USER_LOGIN","parameter":[{"parameterPosition":1,"dataType":"nvarchar","parameterName":"@IV_USERNAME","in_out":"IN"},{"parameterPosition":2,"dataType":"nvarchar","parameterName":"@IV_PASSWORD","in_out":"IN"},{"parameterPosition":3,"dataType":"nvarchar","parameterName":"@C_1","in_out":"IN"}]}]>
+	at ekenya.co.ke.dbapiv3.ApiServiceTest.testStoredProcedures(ApiServiceTest.java:46)
+
