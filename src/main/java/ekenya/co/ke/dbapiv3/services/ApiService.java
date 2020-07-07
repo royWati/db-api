@@ -411,12 +411,25 @@ public class ApiService {
 
         for (JsonElement element : whereClause) {
             String str = element.getAsString();
+
+            boolean complexClauseExistance = false;
+            if (str.contains("(")){
+                complexClauseExistance = true;
+            }
+
             String[] split_string = str.split(" ");
 
             logger.info("FIRST VALUE : "+split_string[0]);
 
             String s = split_string[0];
 
+            if (complexClauseExistance){
+
+                logger.info("COMPLEX QUERY FOUND");
+                for (String value : split_string){
+                    if (value.contains("@")) s = value;
+                }
+            }
 
                 //required field search
                 if (s.contains("@")){

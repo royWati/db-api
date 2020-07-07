@@ -81,7 +81,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                         "from sys.all_procedures proc\n" +
                         "left join sys.all_arguments args\n" +
                         "    on proc.object_id = args.object_id\n" +
-                        "where  object_type = 'PROCEDURE' AND proc.object_name = ? " +
+                        "where  object_type = 'PROCEDURE' AND proc.object_name = ? AND proc.owner = ? " +
                         "order by procedure_name,\n" +
                         "         args.position ";
                 break;
@@ -144,6 +144,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                 if ("oracle".equals(primarydb)){
                     object.remove("PROCEDURE_NAME");
                     object.addProperty("procedure_name",value);
+                    statement.setString(2, schemaName);
                 }
                 logger.info("value "+value);
                 statement.setString(1, value);

@@ -44,3 +44,6 @@ file-storage:
   sp-location: configs/sp-list.json
   query-template: configs/query-template.json
   sql-queries: configs/sql-queries.json
+
+whitelist-ip: localhost, 10.20.2.59
+whitelist-ip-encrypted: pXJW4UnYEHmRmWDaaoMKlw==, PfDO/ivsKPeh9SsehgShPA==
