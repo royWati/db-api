@@ -1,16 +1,16 @@
 spring:
   jpa:
-    database: sql_server
+    database: oracle
     generate-ddl: false
     show-sql: true
     hibernate:
       ddl-auto: none
-  #  database-platform: org.
+    database-platform: org.hibernate.dialect.Oracle12cDialect
   datasource:
-    username: EBANK_GIM #rmunialo
-    url: jdbc:sqlserver://10.20.2.169;databaseName=EBANK_GIM
-    password: pass@word1 #rMunialo@123
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: EBANK_SBU #rmunialo
+    url: jdbc:oracle:thin:@10.20.2.151:1521/ekenyaoracle
+    password: Pass123 #rMunialo@123
+    driver-class-name: oracle.jdbc.OracleDriver
     hikari:
       maximum-pool-size: 20
       pool-name: api-db-pool
@@ -29,15 +29,15 @@ server:
       key-store-type: PKCS12
       key-store-password: mypass
       key-alias: tomcat
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
 #  instance:
 #    secure-port-enabled: true
 #    secure-port: ${server.port}
 
-primarydb: mssql
+primarydb: mysql
 schema-name: EBANK
 
 file-storage:

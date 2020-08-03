@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.stereotype.Service;
 
+import javax.sql.rowset.serial.SerialClob;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -60,6 +61,20 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                         "FROM information_schema.parameters \n" +
                         "WHERE SPECIFIC_NAME = ? ";
                 break;
+
+            case "mysql":
+                sql = "select routine_name as procedure_name from information_schema.routines where " +
+                        "routine_schema not in ('sys', 'information_schema',\n" +
+                        " 'mysql', 'performance_schema')";
+
+                sql_parameters = "SELECT ORDINAL_POSITION as parameterPosition,\n" +
+                        "DATA_TYPE as dataType,\n" +
+                        "PARAMETER_NAME as parameterName,\n" +
+                        "PARAMETER_MODE as in_Out \n" +
+                        "FROM information_schema.parameters \n" +
+                        "WHERE SPECIFIC_NAME = ? ";
+                break;
+
             case "oracle":
                 sql = "select proc.object_name as procedure_name\n" +
                         "from sys.ALL_PROCEDURES proc \n" +
@@ -134,6 +149,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                         procedure_name = "PROCEDURE_NAME";
                         break;
                     case "mssql":
+                    case "mysql":
                         procedure_name = "procedure_name";
                         break;
                 }
@@ -342,6 +358,16 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                 try {
                     switch (dataType.toLowerCase()){
+                        case "clob":
+                            if ("IN/OUT".equals(in_out_value) || "OUT".equals(in_out_value)){
+                                callableStatement.registerOutParameter(field,OracleTypes.CLOB );
+                                hasRegisteredOutParameter = true;
+                                outParameterList.add(field);
+                            }else{
+                                Clob clob = new SerialClob(value.toCharArray());
+                                callableStatement.setClob(field, clob);
+                            }
+                            break;
                         case "nvarchar":
                         case "nvarchar2":
 
