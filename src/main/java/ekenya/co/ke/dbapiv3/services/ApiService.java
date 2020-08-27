@@ -6,6 +6,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import ekenya.co.ke.dbapiv3.DbApiV3Application;
 import ekenya.co.ke.dbapiv3.configuration.LoadConfiguration;
+import ekenya.co.ke.dbapiv3.exceptions.SqlInjectionException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -243,6 +245,12 @@ public class ApiService {
                     }else {
                         values = validateDataFields(dataObject,columnNames, whereClause, false , null);
                     }
+
+                    // perform check for sql injection on the values
+                    values.forEach(s -> {
+                        logger.info("validating --- "+s);
+                        if (checkSqlInjection(s)) throw new SqlInjectionException("sql injection detected");
+                    });
 
 
                     Gson gson = new Gson();
@@ -715,6 +723,32 @@ public class ApiService {
         private String query;
         private String doc;
         private List<String> filters;
+    }
+
+
+
+    public boolean checkSqlInjection(String value){
+
+        JsonObject injectionCheks  = DbApiV3Application.injectionChecks.getAsJsonObject();
+
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        injectionCheks.get("special_characters").getAsJsonArray().forEach(jsonElement -> {
+            String check = jsonElement.getAsString();
+
+            if (value.contains(check)) atomicBoolean.set(true);
+        });
+
+        if (!atomicBoolean.get()){
+            injectionCheks.get("special_words").getAsJsonArray().forEach(jsonElement -> {
+                String check = jsonElement.getAsString();
+                if (value.contains(check.toLowerCase())) atomicBoolean.set(true);
+            });
+
+            return atomicBoolean.get();
+        }else{
+            return true;
+        }
     }
 }
 

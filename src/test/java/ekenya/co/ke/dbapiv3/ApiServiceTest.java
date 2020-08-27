@@ -65,6 +65,14 @@ class ApiServiceTest {
          } catch (IOException e) {
              System.out.println(e.getMessage());
          }
+    }
+    @Test
+    public void tester(){
+        String you = "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 
+        int count = 0;
+       for (char c : you.toCharArray()) if (c == '?') count++;
+
+        System.out.println(count);
     }
 }

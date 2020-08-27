@@ -1,6 +1,9 @@
 package ekenya.co.ke.dbapiv3.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import ekenya.co.ke.dbapiv3.exceptions.SqlInjectionException;
 import ekenya.co.ke.dbapiv3.services.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +29,18 @@ public class Controller {
     }
     @PostMapping(value = "/db-api/execute-operation", produces = "application/json")
     public Object executeServicedQuery(@RequestBody String request){
-        return apiService.executeSavedSqlStatements(request);
+
+        try {
+            return apiService.executeSavedSqlStatements(request);
+        }catch (SqlInjectionException e){
+            System.out.println(e.getMessage());
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("status","500");
+            jsonObject.addProperty("message",e.getMessage());
+
+            return jsonObject.toString();
+        }
+
     }
     @PostMapping(value = "/db-api/fetch-database-operations",produces = "application/json")
     public Object fetchDatabaseOperations() throws JsonProcessingException {

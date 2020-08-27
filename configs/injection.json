@@ -1,0 +1,4 @@
+{
+  "special_characters": ["*",";","--"],
+  "special_words": ["update","delete","insert","select"]
+}

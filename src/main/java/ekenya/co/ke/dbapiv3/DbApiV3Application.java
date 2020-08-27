@@ -14,6 +14,7 @@ public class DbApiV3Application {
     public static JsonElement spJsonElements;
     public static JsonElement queryTemplate;
     public static JsonElement sqlQueries;
+    public static JsonElement injectionChecks;
 
     @Autowired private LoadConfiguration loadConfiguration;
 

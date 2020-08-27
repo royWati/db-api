@@ -48,13 +48,20 @@ public class LoadConfiguration {
     public void updateQueryTemplate(){
          String fileName = environment.getProperty("file-storage.query-template");
          String queryData = environment.getProperty("file-storage.sql-queries");
+         String injectionData = environment.getProperty("file-storage.injections");
 
          DbApiV3Application.queryTemplate = databaseExtractor.retrieveFileContent(fileName);
          DbApiV3Application.sqlQueries = databaseExtractor.retrieveFileContent(queryData);
+         DbApiV3Application.injectionChecks = databaseExtractor.retrieveFileContent(injectionData);
 
    //     logger.info(DbApiV3Application.queryTemplate.toString());
    //     logger.info(DbApiV3Application.sqlQueries.toString());
 
+    }
+
+    public void updateInjectionList(){
+        String fileName  = environment.getProperty("file-storage.injections");
+        DbApiV3Application.injectionChecks = databaseExtractor.retrieveFileContent(fileName);
     }
 
     public void readWhiteListedIPs(){

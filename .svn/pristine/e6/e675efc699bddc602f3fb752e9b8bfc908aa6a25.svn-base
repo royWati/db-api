@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: ekenya.co.ke.dbapiv3.ApiServiceTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 13.373 s <<< FAILURE! - in ekenya.co.ke.dbapiv3.ApiServiceTest
+executeSavedSqlStatements  Time elapsed: 0.232 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <UPDATE TB_BILLER_REQUESTS SET BILLER_STATUS = ?, BILLER_STATUS_DESC = ?, PG_REQUEST_ID = ? WHERE ESBREF = ?> but was: <{"status":200,"message":"database execution was successful","data":[0]}>
+	at ekenya.co.ke.dbapiv3.ApiServiceTest.executeSavedSqlStatements(ApiServiceTest.java:39)
+

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import ekenya.co.ke.dbapiv3.DbApiV3Application;
 import oracle.jdbc.OracleTypes;
+import oracle.jdbc.internal.OracleClob;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -355,17 +358,24 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                 String dataType = object.get("dataType").getAsString();
                 String in_out_value = object.get("inOut").getAsString();
 
-
+                Reader reader = null;
                 try {
                     switch (dataType.toLowerCase()){
                         case "clob":
+                            System.out.println("clob object found...");
                             if ("IN/OUT".equals(in_out_value) || "OUT".equals(in_out_value)){
                                 callableStatement.registerOutParameter(field,OracleTypes.CLOB );
                                 hasRegisteredOutParameter = true;
                                 outParameterList.add(field);
                             }else{
-                                Clob clob = new SerialClob(value.toCharArray());
-                                callableStatement.setClob(field, clob);
+                                callableStatement.setObject(field, value);
+
+                                reader = new StringReader(value);
+
+                                 callableStatement.setClob(field, reader, value.length());
+
+                            //    Clob clob = new SerialClob(value.toCharArray());
+                            //    callableStatement.setClob(field, clob);
                             }
                             break;
                         case "nvarchar":
@@ -433,6 +443,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                             if ("IN/OUT".equals(in_out_value) || "OUT".equals(in_out_value)){
                                 if ("oracle".equals(primarydb)){
                                     logger.info("oracle db found...");
+                                //    callableStatement.registerOutParameter();
                                     callableStatement.registerOutParameter(field, OracleTypes.CURSOR);
                                 }else{
                                     callableStatement.registerOutParameter(field, Types.REF_CURSOR);
@@ -449,6 +460,8 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
+                }finally {
+                    if (reader != null) reader.close();
                 }
                 int j = i+1;
                 System.out.println("parameters added  = "+ j);
@@ -695,8 +708,6 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
         ResultSetMetaData metaData = resultSet.getMetaData();
         int column = metaData.getColumnCount();
 
-
-
             logger.info("columns.."+column);
             logger.info("flag status.."+flag);
 
@@ -798,4 +809,5 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
         }
 
     }
+
 }
