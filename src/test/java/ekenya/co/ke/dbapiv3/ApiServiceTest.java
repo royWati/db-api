@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.StringJoiner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,7 +67,7 @@ class ApiServiceTest {
              System.out.println(e.getMessage());
          }
     }
-    @Test
+//    @Test
     public void tester(){
         String you = "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
 
@@ -74,5 +75,82 @@ class ApiServiceTest {
        for (char c : you.toCharArray()) if (c == '?') count++;
 
         System.out.println(count);
+    }
+
+ //   @Test
+    public void generateQuestionMarks(){
+
+        StringJoiner joiner = new StringJoiner(",","(",")");
+
+        for (int i =0 ; i < 57 ; i ++){
+            joiner.add("?");
+        }
+        System.out.println(joiner.toString());
+    }
+
+ //   @Test
+    public void alignment(){
+
+        String s = "ACCOUNTNUMBER,\n" +
+                "FIRSTNAME,\n" +
+                "MIDDLENAME,\n" +
+                "SURNAME,\n" +
+                "GENDER,\n" +
+                "DOB,\n" +
+                "PLACEOFBIRTH,\n" +
+                "IDTYPE,\n" +
+                "IDNUMBER,\n" +
+                "MOBILENUMBER,\n" +
+                "PROFESSION,\n" +
+                "BRANCH,\n" +
+                "EMAIL,\n" +
+                "BRANCHNAME,\n" +
+                "DSSFLEXID,\n" +
+                "DSSACCOUNTNUMBER,\n" +
+                "IMGPASSPORT,\n" +
+                "IMGID,\n" +
+                "IMGSIGNATURE,\n" +
+                "ACC_CLS,\n" +
+                "CUSTOMER_CATEGORY,\n" +
+                "CARD_NUMBER,\n" +
+                "DSSMOBILENUMBER,\n" +
+                "PERMANENT_REGION,\n" +
+                "PERMANENT_DISTRICT,\n" +
+                "PERMANENT_WARD,\n" +
+                "PERMANENT_STREET,\n" +
+                "RES_DISTRICT,\n" +
+                "RES_WARD,\n" +
+                "RES_STREET,\n" +
+                "RES_REGION,\n" +
+                "POSTALADDRESS,\n" +
+                "PLOTNUMBER,\n" +
+                "INTRODUCTORY_LETTER,\n" +
+                "TERMS_AND_CONDITIONS,\n" +
+                "MARITAL_STATUS,\n" +
+                "CITIZENSHIP,\n" +
+                "CURRENCY,\n" +
+                "EBANK_SBU_STATUS,\n" +
+                "TIN,\n" +
+                "CHECK_NUMBER,\n" +
+                "TELEPHONE,\n" +
+                "TITLE_PREFIX1,\n" +
+                "TITLE_PREFIX2,\n" +
+                "TITLE_PREFIX3,\n" +
+                "MAIDEN_NAME,\n" +
+                "LANDMARKS,\n" +
+                "ID_ISSUEDATE,\n" +
+                "ID_EXPIRYDATE,\n" +
+                "MONTHLY_INCOME,\n" +
+                "INCOME_SOURCE,\n" +
+                "EBANK_SBUREG,\n" +
+                "EBANK_SBUREGNARATIVE,\n" +
+                "RECLASSIFY,\n" +
+                "MANDATE_DECLARATION,\n" +
+                "KYCREF\n";
+
+
+        s = s.replace("\n","");
+
+        System.out.println(s);
     }
 }

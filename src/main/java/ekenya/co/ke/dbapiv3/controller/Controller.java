@@ -10,8 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+import java.util.logging.Logger;
+
 @RestController
 public class Controller {
+    private final static Logger logger = Logger.getLogger(Controller.class.getName());
+
 
     @Autowired private ApiService apiService;
 
@@ -21,7 +26,14 @@ public class Controller {
     }
     @PostMapping(value = "/db-api/execute-stored-procedure", produces = "application/json")
     public Object executeStoreProcedureQuery(@RequestBody String query){
-        return apiService.executeStoredProcedure(query);
+        Object response = apiService.executeStoredProcedure(query);
+        String uuid = UUID.randomUUID().toString();
+        logger.info("=========================================================================================");
+        logger.info("TRX ID : "+uuid);
+        logger.info("REQUEST : "+query);
+        logger.info("RESPONSE : "+response);
+        logger.info("=========================================================================================");
+        return response;
     }
     @PostMapping(value = "/db-api/fetch-stored-procedures", produces = "application/json")
     public Object fetchStoredProcedures() throws Exception {
@@ -30,8 +42,15 @@ public class Controller {
     @PostMapping(value = "/db-api/execute-operation", produces = "application/json")
     public Object executeServicedQuery(@RequestBody String request){
 
+        Object response = apiService.executeSavedSqlStatements(request);
+        String uuid = UUID.randomUUID().toString();
         try {
-            return apiService.executeSavedSqlStatements(request);
+            logger.info("=========================================================================================");
+            logger.info("TRX ID : "+uuid);
+            logger.info("REQUEST : "+request);
+            logger.info("RESPONSE : "+response);
+            logger.info("=========================================================================================");
+            return response;
         }catch (SqlInjectionException e){
             System.out.println(e.getMessage());
             JsonObject jsonObject = new JsonObject();

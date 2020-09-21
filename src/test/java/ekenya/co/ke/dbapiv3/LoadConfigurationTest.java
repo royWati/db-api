@@ -17,7 +17,7 @@ class LoadConfigurationTest {
         loadConfiguration.updateQueryTemplate();
     }
 
-    @Test
+  //  @Test
     public void viewListedIps(){
         loadConfiguration.encryptIpAddresses();
         loadConfiguration.decryptIpAddress();

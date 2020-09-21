@@ -48,7 +48,8 @@ schema-name: EBANK
 file-storage:
   sp-location: configs/sp-list.json
   query-template: configs/query-template.json
-  sql-queries: configs/sql-queries.json
+  sql-queries: configs/temp.json
+ # sql-queries: configs/sql-queries.json
   injections: configs/injection.json
 
 whitelist-ip: localhost, 10.20.2.59

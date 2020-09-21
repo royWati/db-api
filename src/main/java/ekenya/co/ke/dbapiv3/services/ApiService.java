@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicReference;
+//import java.util.logging.//logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +35,7 @@ public class ApiService {
     @Autowired
     LoadConfiguration loadConfiguration;
 
-    private final static Logger logger = Logger.getLogger(ApiService.class.getName());
+  //  private final static //logger //logger = //logger.get//logger(ApiService.class.getName());
 
     private JsonParser jsonParser = new JsonParser();
 
@@ -65,7 +66,7 @@ public class ApiService {
     public Object executeStoredProcedure(String query) {
         JsonObject jsonObject = jsonParser.parse(query).getAsJsonObject();
 
-        logger.info("sp request object : "+jsonObject);
+   //     //logger.info("sp request object : "+jsonObject);
 
         String procedureName = jsonObject.get("procedure").getAsString();
         JsonObject dataObject = jsonObject.get("parameters").getAsJsonObject();
@@ -73,7 +74,7 @@ public class ApiService {
         JsonObject retrieveStructure = databaseExtractor.loadStoredProcedure(procedureName);
         JsonObject responseObject = new JsonObject();
 
-        logger.info("procedure template : "+retrieveStructure);
+  //      //logger.info("procedure template : "+retrieveStructure);
 
         final boolean[] hasMissingValues = {false};
         StringJoiner missingJoiner = new StringJoiner(",","[","]");
@@ -88,21 +89,21 @@ public class ApiService {
 
                 String fieldName = object.get("parameterName").getAsString();
 
-                //    logger.info("JSON -- "+jsonObject);
+                //    //logger.info("JSON -- "+jsonObject);
                 if (dataObject.has(fieldName)){
                     JsonObject obj = new JsonObject();
                     obj.addProperty("field",fieldName);
                     obj.addProperty("dataType", object.get("dataType").getAsString());
                     obj.addProperty("inOut", object.get("inOut").getAsString());
 
-                    logger.info("field name : "+fieldName);
+   //                 //logger.info("field name : "+fieldName);
                     String value = dataObject.get(fieldName).getAsString();
 
                     obj.addProperty("value",value);
 
                     jsonArray.add(obj);
                 }else{
-                    logger.info("null value found");
+                    //logger.info("null value found");
                     hasMissingValues[0] = true;
                     missingJoiner.add(fieldName);
                 }
@@ -126,8 +127,8 @@ public class ApiService {
 
                 }catch (Exception e){
 
-                    logger.info("message "+e.getMessage());
-                    logger.info("cause "+e.getCause());
+                    //logger.info("message "+e.getMessage());
+                    //logger.info("cause "+e.getCause());
                     String message = e.getLocalizedMessage();
                     jsonObject.addProperty("status",500);
                     jsonObject.addProperty("message","Failed execution -> "+message);
@@ -167,8 +168,8 @@ public class ApiService {
             jsonObject.addProperty("status", 500);
             jsonObject.addProperty("message","Failed execution -> "+message);
 
-            logger.info("message "+e.getMessage());
-            logger.info("cause "+e.getCause());
+            //logger.info("message "+e.getMessage());
+            //logger.info("cause "+e.getCause());
         }
 
 
@@ -192,7 +193,7 @@ public class ApiService {
 
         if (null != templateObject){
 
-            logger.info("template : "+templateObject);
+            //logger.info("template : "+templateObject);
 
             String crudType = templateObject.get("CRUD_TYPE").getAsString();
             JsonArray whereClause = templateObject.get("WHERE_CLAUSE").getAsJsonArray();
@@ -210,19 +211,8 @@ public class ApiService {
                 missingValues = validateDataFields(dataObject,columnNames, whereClause, true, orderBy );
             }else if("SEARCH".equals(crudType)){
 
-                // search operation requires at least one filter, hence we validate to check if the fields are
-                // present
-                JsonArray likeArray = templateObject.get("LIKE").getAsJsonArray();
-                boolean hasSearchField = validateDataFields(dataObject, likeArray);
+                missingValues = likeValues(dataObject, templateObject.get("ORDER_STATEMENT").getAsString(),true);
 
-                if (!hasSearchField){
-                    for (JsonElement element : likeArray){
-                        String str = element.getAsString();
-
-                        String field = str.split(":")[1];
-                        missingValues.add(field);
-                    }
-                }
             }else {
                  missingValues = validateDataFields(dataObject,columnNames, whereClause, true , null);
             }
@@ -235,33 +225,67 @@ public class ApiService {
                     // create the preparedStatement sql statement as required
                     String prepared_statement_string = prepareSqlStatement(sqlTemplate, templateObject, crudType, dataObject);
 
-                    //logger.info(prepared_statement_string);
+                    ////logger.info(prepared_statement_string);
+
+                    // create a page request query for a search
+
+                    String page = "";
+
+                    if ("SEARCH".equals(crudType) || "SELECT".equals(crudType))
+                    page = createPageQuery(templateObject.getAsJsonArray("COLUMN_NAMES"),crudType);
+
+                    //logger.info("PAGE QUERY FOR "+crudType+" "+page);
+
+                    String pageQuery = prepareSqlStatement(page, templateObject, crudType, dataObject);
 
                     List<String> values = new ArrayList<>();
+
+                    List<String> pageValues = new ArrayList<>();
 
                     if ("SELECT".equals(crudType)){
                         String orderBy = templateObject.get("ORDER_STATEMENT").getAsString();
                         values = validateDataFields(dataObject,columnNames, whereClause, false, orderBy );
+                        pageValues = validateDataFields(dataObject,columnNames, whereClause, false , null);
                     }else {
                         values = validateDataFields(dataObject,columnNames, whereClause, false , null);
+                        pageValues = validateDataFields(dataObject,columnNames, whereClause, false , null);
+                    }
+
+                    if ("SEARCH".equals(crudType) ){
+                        values = likeValues(dataObject, templateObject.get("ORDER_STATEMENT").getAsString(),false);
                     }
 
                     // perform check for sql injection on the values
                     values.forEach(s -> {
-                        logger.info("validating --- "+s);
+                        //logger.info("validating --- "+s);
                         if (checkSqlInjection(s)) throw new SqlInjectionException("sql injection detected");
                     });
 
 
                     Gson gson = new Gson();
                     JsonElement jsonElement = gson.toJsonTree(values , new TypeToken<List<String>>(){}.getType());
+                    JsonElement pageElement = gson.toJsonTree(pageValues , new TypeToken<List<String>>(){}.getType());
 
-                    logger.info(prepared_statement_string);
-                    logger.info("data - > "+jsonElement.toString());
+                    //logger.info("PAGE Q :"+pageQuery);
+                    //logger.info(prepared_statement_string);
+                    //logger.info("data - > "+jsonElement.toString());
+                    //logger.info("page data - > "+pageElement.toString());
 
                     try {
                         JsonArray response_array = databaseExtractor.executeSqlStatement(prepared_statement_string,
                                 jsonElement.getAsJsonArray());
+
+                        // GET PAGE COUNT
+                        //logger.info("CRUD TYPE ;;"+crudType);
+                        if ("SEARCH".equals(crudType) || "SELECT".equals(crudType)){
+                            JsonArray pageResults = databaseExtractor.executeSqlStatement(pageQuery, pageElement.getAsJsonArray());
+
+                            JsonObject pageObject = new JsonObject();
+                            responseObject.addProperty("totalResults",
+                                    pageResults.get(0).getAsJsonObject().get("TOTAL_RESULTS").getAsString());
+                            //logger.info("PAGE RESULTS "+pageResults);
+
+                        }
 
                         responseObject.addProperty("status", 200);
                         responseObject.addProperty("message", "database execution was successful");
@@ -386,7 +410,7 @@ public class ApiService {
 
             String[] split_string = str.split(" ");
 
-            logger.info("FIRST VALUE : "+split_string[0]);
+            //logger.info("FIRST VALUE : "+split_string[0]);
 
             String s = split_string[0];
 
@@ -427,13 +451,13 @@ public class ApiService {
 
             String[] split_string = str.split(" ");
 
-            logger.info("FIRST VALUE : "+split_string[0]);
+            //logger.info("FIRST VALUE : "+split_string[0]);
 
             String s = split_string[0];
 
             if (complexClauseExistance){
 
-                logger.info("COMPLEX QUERY FOUND");
+                //logger.info("COMPLEX QUERY FOUND");
                 for (String value : split_string){
                     if (value.contains("@")) s = value;
                 }
@@ -454,7 +478,7 @@ public class ApiService {
 
                     String key = s.replace("OPTIONAL:","");
 
-                    logger.info("OPTIONAL VALUE FOUND : "+key);
+                    //logger.info("OPTIONAL VALUE FOUND : "+key);
 
                     // validation does not take place on optional values hence next set of logic only applies to adding
                     // values to be used by the prepared statement
@@ -463,10 +487,10 @@ public class ApiService {
                      * dates columns : OPTIONAL:FROM->CREATED_ON > ? , OPTIONAL:TO->CREATED_ON < ?
                      *
                      */
-                    logger.info("value key "+key);
+                    //logger.info("value key "+key);
                     key = key.split("->")[0];
 
-                    logger.info("key -> "+key);
+                    //logger.info("key -> "+key);
 
                     if (!validate){
                         // check if the optional value is present in the data object
@@ -511,6 +535,38 @@ public class ApiService {
         return missingValues;
     }
 
+    public List<String> likeValues (JsonObject dataObject, String orderyBy, boolean validate){
+        List<String> list = new ArrayList<>();
+
+        Matcher findOffsets = Pattern.compile("\\((.*?)\\)").matcher(orderyBy);
+
+        while(findOffsets.find()) {
+            switch (findOffsets.group(1)){
+                case "@PAGE":
+
+                    if (validate){
+                        if (!dataObject.has("PAGE")) list.add("PAGE");
+                    }else{
+                        String size = dataObject.get("SIZE").getAsString();
+                        String value = dataObject.get("PAGE").getAsString();
+                        int new_page = Integer.parseInt(size)*Integer.parseInt(value);
+                        list.add(String.valueOf(new_page));
+                    }
+
+                    break;
+                case "@SIZE":
+                        if (validate){
+                            if (!dataObject.has("SIZE")) list.add("SIZE");
+                        }else{
+                            String a = dataObject.get("SIZE").getAsString();
+                            list.add(a);
+                        }
+                    break;
+            }
+        }
+        return list;
+    }
+
     /**
      *
      * @param queryStringTemplate  -- this is the sql statement stored in the query-template.json
@@ -537,7 +593,7 @@ public class ApiService {
                     JsonArray whereArray = queryObjectTemplate.get("WHERE_CLAUSE").getAsJsonArray();
                     String where_clause = constructStringFromArray(whereArray, dataObject," AND ");
 
-                    logger.info("CONSTRUCTED WHERE CLAUSE : "+where_clause);
+                    //logger.info("CONSTRUCTED WHERE CLAUSE : "+where_clause);
 
                     /**
                      * check if the where_clause contains an '=' sign, this is to justify the existance of
@@ -571,7 +627,7 @@ public class ApiService {
                     JsonArray columnArray = queryObjectTemplate.get("COLUMN_NAMES").getAsJsonArray();
                     String column_names = constructStringFromArray(columnArray, dataObject," , ");
 
-                    logger.info("COLUMNS -> "+column_names);
+                    //logger.info("COLUMNS -> "+column_names);
 
                     column_names = column_names.replace("@","");
                     column_names = column_names.replace("OPTIONAL:","");
@@ -594,6 +650,14 @@ public class ApiService {
 
                     queryStringTemplate = queryStringTemplate.replace("{ORDER_STATEMENT}", order_value);
                     break;
+
+                case "LIKE":
+                    JsonArray like_array = queryObjectTemplate.get("LIKE").getAsJsonArray();
+
+                    String liker = create_like_structure(like_array, dataObject);
+
+                    queryStringTemplate = queryStringTemplate.replace("{LIKE}", liker);
+                    break;
             }
             System.out.println(m.group(1));
         }
@@ -601,16 +665,31 @@ public class ApiService {
         return queryStringTemplate;
     }
 
+    private String create_like_structure(JsonArray like_array, JsonObject dataObject) {
+
+        AtomicReference<String> s = new AtomicReference<>("");
+
+        like_array.forEach(jsonElement -> {
+            String key = jsonElement.getAsString().split(":")[1];
+            if (dataObject.has(key)){
+                String v = key+" LIKE '%"+dataObject.get(key).getAsString()+"%'";
+                s.set(v);
+            }
+        });
+
+        return s.get();
+    }
+
     private String constructStringFromArray(JsonArray whereArray, JsonObject dataObject, String delimeter) {
         StringJoiner joiner = new StringJoiner(delimeter,"","");
 
         // " AND "
-        logger.info("clause data: "+dataObject);
+        //logger.info("clause data: "+dataObject);
         whereArray.forEach(jsonElement ->{
             // check if the value contains optional string
             String s = jsonElement.getAsString();
 
-            logger.info("clause : "+s);
+            //logger.info("clause : "+s);
 
             if (s.contains("OPTIONAL")){
                 String fieldChecker = s.split(":")[1];
@@ -622,7 +701,7 @@ public class ApiService {
                     hasMoreMapping = true;
                 }
 
-                logger.info("field checker : "+fieldChecker);
+                //logger.info("field checker : "+fieldChecker);
                 if (dataObject.has(fieldChecker.split(" ")[0])){  // the split is to enable get the first value
 
                     if (hasMoreMapping){
@@ -651,19 +730,19 @@ public class ApiService {
     String constructStringFromArray_Columns(JsonArray jsonArray, JsonObject dataObject){
         StringJoiner joiner = new StringJoiner(" , ","","");
 
-        logger.info("clause data: "+dataObject);
-        logger.info("json array data: "+jsonArray);
+        //logger.info("clause data: "+dataObject);
+        //logger.info("json array data: "+jsonArray);
 
         jsonArray.forEach(jsonElement ->{
             // check if the value contains optional string
             String s = jsonElement.getAsString();
 
-            logger.info("clause : "+s);
+            //logger.info("clause : "+s);
 
             if (s.contains("OPTIONAL")){
                 String fieldChecker = s.split(":")[1];
 
-                logger.info("field checker : "+fieldChecker);
+                //logger.info("field checker : "+fieldChecker);
                 if (dataObject.has(fieldChecker.split(" ")[0])){
                     joiner.add(s);
                 }
@@ -736,7 +815,7 @@ public class ApiService {
         injectionCheks.get("special_characters").getAsJsonArray().forEach(jsonElement -> {
             String check = jsonElement.getAsString();
 
-            if (value.contains(check)) atomicBoolean.set(true);
+            if (value.toLowerCase().contains(check)) atomicBoolean.set(true);
         });
 
         if (!atomicBoolean.get()){
@@ -750,6 +829,16 @@ public class ApiService {
             return true;
         }
     }
+
+    String createPageQuery(JsonArray columns, String crudType){
+        return "SELECT".equals(crudType) ?
+        "SELECT COUNT("+columns.get(0)+") as " +
+                "TOTAL_RESULTS FROM {TABLE_NAME} {WHERE_CLAUSE} {GROUP_STATEMENT}" :
+                "SELECT COUNT("+columns.get(0)+") as " +
+                        "TOTAL_RESULTS FROM {TABLE_NAME} WHERE {LIKE}"    ;
+    }
+
+
 }
 
 
