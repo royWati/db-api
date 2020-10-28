@@ -26,5 +26,7 @@ public class DbApiV3Application {
     void configureApplication() throws Exception {
         loadConfiguration.updateSpListStore();
         loadConfiguration.updateQueryTemplate();
+
+
     }
 }

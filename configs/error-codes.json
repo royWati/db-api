@@ -1,0 +1,21 @@
+{
+  "oracle": [
+    {
+
+      "code": "ORA-00001",
+      "cause": "UniqueConstraintViolation",
+      "field39": "01  ",
+      "LINK_CARD": "Dear customer, the card provided card number already exists",
+      "default": "Provided data already exists"
+    },
+    {
+      "code": "ORA-00900",
+      "cause": "InvalidSqlStatement"
+    },
+    {
+      "code": "ORA-00901",
+      "cause": "InvalidCreateStatement"
+    }
+  ]
+}
+

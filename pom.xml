@@ -10,7 +10,7 @@
     </parent>
     <groupId>ekenya.co.ke</groupId>
     <artifactId>db-api-v3</artifactId>
-    <version>v1</version>
+    <version>TEST-V4</version>
     <name>db-api-v3</name>
     <description>Demo project for Spring Boot</description>
 
@@ -91,6 +91,11 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-activemq</artifactId>
         </dependency>
     </dependencies>
 

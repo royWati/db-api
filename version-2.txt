@@ -1,0 +1,7 @@
+- HAVE CONFIGURATIONS PER CHANNEL
+- [] TO PROCESS IN AND NOT IN PARAMETER
+- replace the null with an empty string
+
+{
+    "FIELD":["","",""],
+}

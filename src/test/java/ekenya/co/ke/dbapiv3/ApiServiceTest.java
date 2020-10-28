@@ -11,6 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -152,5 +155,22 @@ class ApiServiceTest {
         s = s.replace("\n","");
 
         System.out.println(s);
+    }
+
+    @Test
+    public void splitValues(){
+
+        String field54 = "9030010726483|16779555~9030014668771|27462~9030015853750|982928";
+
+        String[] accounts = field54.split("~");
+
+
+        List<String> values = new ArrayList<>();
+        Arrays.stream(accounts).forEach(s -> {
+            System.out.println(s);
+            Arrays.stream(s.split("\\|")).forEach(values::add);
+        });
+
+        values.forEach(System.out::println);
     }
 }

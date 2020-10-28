@@ -2,10 +2,12 @@ package ekenya.co.ke.dbapiv3.configuration;
 
 import com.google.gson.JsonArray;
 
+import com.google.gson.JsonParser;
 import ekenya.co.ke.dbapiv3.DbApiV3Application;
 import ekenya.co.ke.dbapiv3.services.DatabaseExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -116,4 +118,8 @@ public class LoadConfiguration {
     }
 
 
+    @Bean
+    JsonParser getJsonParser(){
+        return new JsonParser();
+    }
 }

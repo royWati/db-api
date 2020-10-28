@@ -11,17 +11,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-//import java.util.logging.//logger;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +38,7 @@ public class ApiService {
     @Autowired
     LoadConfiguration loadConfiguration;
 
-  //  private final static //logger //logger = //logger.get//logger(ApiService.class.getName());
+    private final static Logger logger = Logger.getLogger(ApiService.class.getName());
 
     private JsonParser jsonParser = new JsonParser();
 
@@ -55,6 +58,11 @@ public class ApiService {
             responseObject.addProperty("message", "database execution was successful");
             responseObject.add("data",response_array);
 
+        }catch (SQLException e){
+            logger.info("error code >> "+e.getSQLState());
+
+            responseObject.addProperty("status", 500);
+            responseObject.addProperty("message", "error in database execution -> "+e.getMessage());
         }catch (Exception e){
             responseObject.addProperty("status", 500);
             responseObject.addProperty("message", "error in database execution -> "+e.getMessage());
@@ -97,9 +105,19 @@ public class ApiService {
                     obj.addProperty("inOut", object.get("inOut").getAsString());
 
    //                 //logger.info("field name : "+fieldName);
-                    String value = dataObject.get(fieldName).getAsString();
 
-                    obj.addProperty("value",value);
+                    String value = "";
+                    if (dataObject.get(fieldName) instanceof  JsonObject ||
+                            dataObject.get(fieldName) instanceof  JsonArray ){
+                        JsonElement data_obj = dataObject.get(fieldName);
+                        value = data_obj.toString();
+
+                        obj.add("value",data_obj);
+
+                    }else{
+                        value = dataObject.get(fieldName).getAsString();
+                        obj.addProperty("value",value);
+                    }
 
                     jsonArray.add(obj);
                 }else{
@@ -111,6 +129,7 @@ public class ApiService {
 
             if (!hasMissingValues[0]){
                 try {
+
                     JsonArray response = databaseExtractor.executeStoredProcedure(procedureName, jsonArray);
 
                     if (response.size() == 1 && response.get(0).getAsJsonObject().has("FAILED_EXCEPTION")){
@@ -225,7 +244,7 @@ public class ApiService {
                     // create the preparedStatement sql statement as required
                     String prepared_statement_string = prepareSqlStatement(sqlTemplate, templateObject, crudType, dataObject);
 
-                    ////logger.info(prepared_statement_string);
+                    logger.info(prepared_statement_string);
 
                     // create a page request query for a search
 
@@ -272,17 +291,31 @@ public class ApiService {
                     //logger.info("page data - > "+pageElement.toString());
 
                     try {
+
+              //          System.out.println(prepared_statement_string);
                         JsonArray response_array = databaseExtractor.executeSqlStatement(prepared_statement_string,
                                 jsonElement.getAsJsonArray());
 
                         // GET PAGE COUNT
                         //logger.info("CRUD TYPE ;;"+crudType);
                         if ("SEARCH".equals(crudType) || "SELECT".equals(crudType)){
-                            JsonArray pageResults = databaseExtractor.executeSqlStatement(pageQuery, pageElement.getAsJsonArray());
 
-                            JsonObject pageObject = new JsonObject();
-                            responseObject.addProperty("totalResults",
-                                    pageResults.get(0).getAsJsonObject().get("TOTAL_RESULTS").getAsString());
+                            try{
+                                JsonArray pageResults = databaseExtractor.executeSqlStatement(pageQuery, pageElement.getAsJsonArray());
+
+                                JsonObject pageObject = new JsonObject();
+                                responseObject.addProperty("totalResults",
+                                        pageResults.get(0).getAsJsonObject().get("TOTAL_RESULTS").getAsString());
+                            }catch (SQLException e ){
+                                logger.info("error code >>> "+e.getSQLState());
+                                responseObject.addProperty("totalResults",
+                                        0);
+
+                            }catch (Exception e ){
+                                responseObject.addProperty("totalResults",
+                                       0);
+                            }
+
                             //logger.info("PAGE RESULTS "+pageResults);
 
                         }
@@ -291,6 +324,23 @@ public class ApiService {
                         responseObject.addProperty("message", "database execution was successful");
                         responseObject.add("data",response_array);
 
+                    }catch (SQLException e ){
+
+                       String main_error = e.getMessage();
+
+                       String parent_error = "";
+                       String[] error_split = main_error.split(" ");
+
+                       for (String s : error_split){
+                           if (s.contains("ORA")){
+                               parent_error =  s.substring(0, s.length()-1);
+                               break;
+                           }
+                       }
+
+                        logger.info("error code > "+parent_error+" | class "+e.getClass().getSimpleName());
+                        responseObject.addProperty("status", 500);
+                        responseObject.addProperty("message", "error in database execution -> "+e.getMessage());
                     }catch (Exception e){
                         responseObject.addProperty("status", 500);
                         responseObject.addProperty("message", "error in database execution -> "+e.getMessage());
@@ -434,7 +484,15 @@ public class ApiService {
                         // check if the optional value is present in the data object
                         if (dataObject.has(key)){
                             String value = dataObject.get(key).getAsString();
-                            missingValues.add(value);
+
+                            if (dataObject.get(key) instanceof JsonArray){
+                                dataObject.get(key).getAsJsonArray().forEach(jsonElement -> {
+                                    missingValues.add(jsonElement.getAsString());
+                                });
+                            }else {
+                                missingValues.add(value);
+                            }
+
                         }
                     }
                 }
@@ -495,8 +553,14 @@ public class ApiService {
                     if (!validate){
                         // check if the optional value is present in the data object
                         if (dataObject.has(key)){
-                            String value = dataObject.get(key).getAsString();
-                            missingValues.add(value);
+
+                            if (dataObject.get(key) instanceof JsonArray){
+                                dataObject.get(key).getAsJsonArray().forEach(jsonElement -> {
+                                    missingValues.add(jsonElement.getAsString());
+                                });
+                            }else {
+                                missingValues.add(dataObject.get(key).getAsString());
+                            }
                         }
                     }
                 }
@@ -659,7 +723,7 @@ public class ApiService {
                     queryStringTemplate = queryStringTemplate.replace("{LIKE}", liker);
                     break;
             }
-            System.out.println(m.group(1));
+      //      System.out.println(m.group(1));
         }
 
         return queryStringTemplate;
@@ -667,12 +731,20 @@ public class ApiService {
 
     private String create_like_structure(JsonArray like_array, JsonObject dataObject) {
 
+        // we check if we have any where clause objects that dont need the search operation but operate as filters
+        // hence check for -> and split the values
+
+
         AtomicReference<String> s = new AtomicReference<>("");
+
+        StringJoiner joiner = new StringJoiner(" AND "," "," ");
 
         like_array.forEach(jsonElement -> {
             String key = jsonElement.getAsString().split(":")[1];
+
             if (dataObject.has(key)){
                 String v = key+" LIKE '%"+dataObject.get(key).getAsString()+"%'";
+                joiner.add(v);
                 s.set(v);
             }
         });
@@ -704,13 +776,30 @@ public class ApiService {
                 //logger.info("field checker : "+fieldChecker);
                 if (dataObject.has(fieldChecker.split(" ")[0])){  // the split is to enable get the first value
 
+                    // check if it contains <?> to indicate the existence of an array like function
+                    if (s.contains("#")){
+                        if (dataObject.get(fieldChecker.split(" ")[0]) instanceof JsonArray){
+                            StringJoiner multi_item = new StringJoiner(",","(",")");
+                            dataObject.get(fieldChecker.split(" ")[0])
+                                    .getAsJsonArray().forEach(jsonElement1 -> multi_item.add("?"));
+
+           //                 System.out.println("\n\n\n"+multi_item.toString()+"\n\n\n");
+
+                            s = s.replaceAll("#",multi_item.toString());
+
+           //                 System.out.println("\n\n\n"+s+"\n\n\n");
+                        }
+                    }
                     if (hasMoreMapping){
+          //              System.out.println("\n\n\n"+s+"\n\n\n");
                         joiner.add(s.split("->")[1]);
                     }else{
                         joiner.add(s);
                     }
 
                 }
+
+
             }else{
                 joiner.add(s);
             }

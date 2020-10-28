@@ -25,16 +25,17 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-//import java.util.logging.//logger;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 @Service
-public class DatabaseExtractorImpl implements DatabaseExtractor {
+public class
+DatabaseExtractorImpl implements DatabaseExtractor {
     @Autowired
     private JdbcTemplate jdbcTemplate;
- //   private final static //logger //logger = //logger.get//logger(DatabaseExtractorImpl.class.getName());
+    private final static Logger logger = Logger.getLogger(DatabaseExtractorImpl.class.getName());
 
     @Value("${primarydb}")
     private String primarydb;
@@ -121,8 +122,8 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
         // prepare the statement for execution
         String finalSql = sql;
 
-        //logger.info("PROCEDURE : "+finalSql);
-        //logger.info("PARAMETERS : "+sql_parameters);
+     //   logger.info("PROCEDURE : "+finalSql);
+    //    logger.info("PARAMETERS : "+sql_parameters);
 
         //jdbcTemplate.queryForList(finalSql).forEach(System.out::println);
         PreparedStatementCreator preparedStatementCreator = connection -> {
@@ -199,9 +200,18 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                     //logger.info("object from parameter "+jsonObject.toString());
                     JsonObject oracleObject = new JsonObject();
                     oracleObject.addProperty("parameterName",jsonObject.get("PARAMETERNAME").getAsString());
-                    oracleObject.addProperty("dataType",jsonObject.get("DATATYPE").getAsString());
+
+
+                    if("CLOB".equals(jsonObject.get("DATATYPE").getAsString())){
+
+                        // we change th
+                        oracleObject.addProperty("dataType","NVARCHAR2");
+                    }else{
+                        oracleObject.addProperty("dataType",jsonObject.get("DATATYPE").getAsString());
+                    }
+
                     oracleObject.addProperty("inOut",jsonObject.get("IN_OUT").getAsString());
-                    if (jsonObject.get("PARAMETERPOSITION").getAsString() != "null")
+                    if (jsonObject.get("PARAMETERPOSITION").getAsString() != "")
                         oracleObject.addProperty("parameterPosition",jsonObject.get("PARAMETERPOSITION").getAsLong());
                     else
                         oracleObject.addProperty("parameterPosition",0);
@@ -281,11 +291,11 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
         try {
             String dataTemplate = jsonArray.toString();
-            System.out.println(dataTemplate);
+ //           System.out.println(dataTemplate);
             fileWriter = new FileWriter(spFileLocation);
             fileWriter.write(dataTemplate);
             fileWriter.flush();
-            System.out.println("data template updated successfully...");
+ //           System.out.println("data template updated successfully...");
         } catch (Exception e) {
             //logger.info(e.getMessage());
         } finally {
@@ -383,15 +393,25 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                 JsonObject object = jsonArray.get(i).getAsJsonObject();
                 //logger.info("object to create --"+i+"---- "+object.toString());
                 String field = object.get("field").getAsString();
-                String value = object.get("value").getAsString();
+                JsonElement value = object.get("value");
                 String dataType = object.get("dataType").getAsString();
                 String in_out_value = object.get("inOut").getAsString();
+
+                String v = "";
+                if (value instanceof JsonObject || value instanceof  JsonArray){
+                    v = value.toString();
+                }else{
+                    v =  value.getAsString();
+                }
+
+
+     //           logger.info("value to process : "+ v);
 
                 Reader reader = null;
                 try {
                     switch (dataType.toLowerCase()){
                         case "clob":
-                            System.out.println("clob object found...");
+                //            System.out.println("clob object found...");
                             if ("IN/OUT".equals(in_out_value) || "OUT".equals(in_out_value)){
                                 callableStatement.registerOutParameter(field,OracleTypes.CLOB );
                                 hasRegisteredOutParameter = true;
@@ -399,9 +419,9 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                             }else{
                                 callableStatement.setObject(field, value);
 
-                                reader = new StringReader(value);
+                                reader = new StringReader(v);
 
-                                 callableStatement.setClob(field, reader, value.length());
+                                 callableStatement.setClob(field, reader, v.length());
 
                             //    Clob clob = new SerialClob(value.toCharArray());
                             //    callableStatement.setClob(field, clob);
@@ -415,7 +435,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                                 hasRegisteredOutParameter = true;
                                 outParameterList.add(field);
                             }else{
-                                callableStatement.setString(field, value);
+                                callableStatement.setString(field, v);
                             }
                             break;
                         case "varchar":
@@ -427,7 +447,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                                 hasRegisteredOutParameter = true;
                                 outParameterList.add(field);
                             }else{
-                                callableStatement.setString(field, value);
+                                callableStatement.setString(field, v);
                             }
 
                             break;
@@ -442,11 +462,13 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                                 // handling NumberFormatException error
 
-                                if(!"".equals(value)){
-                                    if(value.contains("."))
-                                        callableStatement.setDouble(field, Double.parseDouble(value));
+
+                                if(!"".equals(v)){
+
+                                    if(value.toString().contains("."))
+                                        callableStatement.setDouble(field, Double.parseDouble(v));
                                     else
-                                    callableStatement.setInt(field, Integer.parseInt(value));
+                                    callableStatement.setInt(field, Integer.parseInt(v));
                                 }else{
                                     callableStatement.setInt(field, 0);
                                 }
@@ -461,7 +483,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                                 //logger.info("OUT PARAMETER FOUND : "+field);
                             }else{
-                                callableStatement.setLong(field, Long.parseLong(value));
+                                callableStatement.setLong(field, Long.parseLong(v));
                             }
                             break;
                         case "ref cursor":
@@ -480,7 +502,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                                 hasRegisteredOutParameter = true;
                                 outParameterList.add(field);
                             }else{
-                                callableStatement.setString(field, value);
+                                callableStatement.setString(field, v);
                             }
                             //logger.info("OUT PARAMETER FOUND : "+field);
                             break;
@@ -493,7 +515,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                     if (reader != null) reader.close();
                 }
                 int j = i+1;
-                System.out.println("parameters added  = "+ j);
+       //         System.out.println("parameters added  = "+ j);
             }
 
             //boolean hasResultSet =
@@ -526,7 +548,19 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 //            }
             //resultSet = callableStatement.executeQuery();
 
-        }catch (Exception e){
+        }catch (SQLException e){
+            e.printStackTrace();
+            //   throw new Exception(e.getMessage());
+            String error = e.getLocalizedMessage();
+
+            logger.info("error code : "+e.getSQLState());
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("FAILED_EXCEPTION",error);
+
+            resultArray.add(jsonObject);
+
+        }catch (IOException e){
             e.printStackTrace();
             //   throw new Exception(e.getMessage());
             String error = e.getLocalizedMessage();
@@ -535,7 +569,6 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
             jsonObject.addProperty("FAILED_EXCEPTION",error);
 
             resultArray.add(jsonObject);
-
         }finally {
             try {
                 if (!connection.isClosed()){
@@ -559,7 +592,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
     }
 
     @Override
-    public JsonArray executeSqlStatement(String sqlStatement, JsonArray jsonArray) throws Exception {
+    public JsonArray executeSqlStatement(String sqlStatement, JsonArray jsonArray) throws SQLException {
         //logger.info(sqlStatement);
 
         boolean executeUpdate = false;
@@ -598,7 +631,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
                         // check if the code is a string or a number coz of the esb processing
 
-                        if (NumberUtils.isCreatable(initial_object)){
+                        if (NumberUtils.isCreatable(initial_object) && initial_object.length() < 6){
                             statement.setInt(parameter_index, Integer.parseInt(initial_object));
                             //logger.info("number found to be working "+initial_object);
                         }else{
@@ -679,7 +712,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
                             column_names);
                     break;
             }
-            System.out.println(m.group(1));
+ //           System.out.println(m.group(1));
         }
 
         //logger.info(template);
@@ -693,7 +726,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
     }
 
     private void ExecuteJdbcQuery(JsonArray parameter_array, PreparedStatementCreator preparedStatementCreator1, int flag,
-                                  boolean executeUpdate) throws Exception {
+                                  boolean executeUpdate) throws SQLException {
         if (executeUpdate){
             try {
                 int affected_rows = jdbcTemplate.update(preparedStatementCreator1);
@@ -702,7 +735,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
             }catch (Exception e){
                 //logger.info("ERROR IN EXECUTING UPDATE : "+e.getMessage());
-                throw new Exception(e.getMessage());
+                throw new SQLException(e.getMessage());
             }
 
         }else{
@@ -796,7 +829,7 @@ public class DatabaseExtractorImpl implements DatabaseExtractor {
 
             }
         }else{
-            dataObject.addProperty(columnName, "null");
+            dataObject.addProperty(columnName, "");
         }
     }
 

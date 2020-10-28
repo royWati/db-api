@@ -1,11 +1,14 @@
 package ekenya.co.ke.dbapiv3.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import ekenya.co.ke.dbapiv3.exceptions.SqlInjectionException;
 import ekenya.co.ke.dbapiv3.services.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +20,15 @@ import java.util.logging.Logger;
 public class Controller {
     private final static Logger logger = Logger.getLogger(Controller.class.getName());
 
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired JsonParser jsonParser;
+
+    @Autowired
+    JmsTemplate jmsTemplate;
+
+    private static  final String logProcessorLocation = "log-processor";
 
     @Autowired private ApiService apiService;
 
@@ -28,11 +40,7 @@ public class Controller {
     public Object executeStoreProcedureQuery(@RequestBody String query){
         Object response = apiService.executeStoredProcedure(query);
         String uuid = UUID.randomUUID().toString();
-        logger.info("=========================================================================================");
-        logger.info("TRX ID : "+uuid);
-        logger.info("REQUEST : "+query);
-        logger.info("RESPONSE : "+response);
-        logger.info("=========================================================================================");
+        printLog(query, response, uuid);
         return response;
     }
     @PostMapping(value = "/db-api/fetch-stored-procedures", produces = "application/json")
@@ -44,12 +52,9 @@ public class Controller {
 
         Object response = apiService.executeSavedSqlStatements(request);
         String uuid = UUID.randomUUID().toString();
+
+        printLog(request, response, uuid);
         try {
-            logger.info("=========================================================================================");
-            logger.info("TRX ID : "+uuid);
-            logger.info("REQUEST : "+request);
-            logger.info("RESPONSE : "+response);
-            logger.info("=========================================================================================");
             return response;
         }catch (SqlInjectionException e){
             System.out.println(e.getMessage());
@@ -64,5 +69,14 @@ public class Controller {
     @PostMapping(value = "/db-api/fetch-database-operations",produces = "application/json")
     public Object fetchDatabaseOperations() throws JsonProcessingException {
         return apiService.fetchDatabaseOperations();
+    }
+
+    void printLog(String request, Object response , String trxId){
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("dbApiReference",trxId);
+            jsonObject.add("request",jsonParser.parse(request));
+            jsonObject.add("response",jsonParser.parse(String.valueOf(response)));
+            jmsTemplate.convertAndSend(logProcessorLocation, jsonObject.toString());
+
     }
 }
