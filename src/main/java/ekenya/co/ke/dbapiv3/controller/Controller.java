@@ -34,7 +34,11 @@ public class Controller {
 
     @PostMapping(value = "db-api/execute-raw-query",produces = "application/json")
     public Object executeRawSqlStatement(@RequestBody String query){
-        return apiService.executeRawSqlStatement(query);
+
+        Object response = apiService.executeRawSqlStatement(query);
+        String uuid = UUID.randomUUID().toString();
+        printLog(query, response, uuid);
+        return response;
     }
     @PostMapping(value = "/db-api/execute-stored-procedure", produces = "application/json")
     public Object executeStoreProcedureQuery(@RequestBody String query){
@@ -72,11 +76,28 @@ public class Controller {
     }
 
     void printLog(String request, Object response , String trxId){
+
+            String s;
+            s =String.valueOf(response);
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("dbApiReference",trxId);
             jsonObject.add("request",jsonParser.parse(request));
-            jsonObject.add("response",jsonParser.parse(String.valueOf(response)));
-            jmsTemplate.convertAndSend(logProcessorLocation, jsonObject.toString());
+
+           logger.info(trxId+"===============\n"+request+"\n==================");
+
+            if (s.length() > 500){
+                logger.info(trxId+"========================================\n"+s.substring(0,499)+"\n==================");
+          //      jsonObject.addProperty("response",s.substring(0,499));
+            }else{
+                logger.info(trxId+"========================================\n"+s+"\n==================");
+    //            jsonObject.add("response",jsonParser.parse(s));
+            }
+
+
+
+
+
+        //    jmsTemplate.convertAndSend(logProcessorLocation, jsonObject.toString());
 
     }
 }
