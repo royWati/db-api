@@ -10,8 +10,9 @@
     </parent>
     <groupId>ekenya.co.ke</groupId>
     <artifactId>db-api-v3</artifactId>
-    <version>TEST-V4</version>
+    <version>TEST-V5</version>
     <name>db-api-v3</name>
+
     <description>Demo project for Spring Boot</description>
 
     <properties>

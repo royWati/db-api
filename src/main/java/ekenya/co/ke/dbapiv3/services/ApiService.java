@@ -285,7 +285,7 @@ public class ApiService {
                     JsonElement jsonElement = gson.toJsonTree(values , new TypeToken<List<String>>(){}.getType());
                     JsonElement pageElement = gson.toJsonTree(pageValues , new TypeToken<List<String>>(){}.getType());
 
-                    //logger.info("PAGE Q :"+pageQuery);
+                    logger.info("PAGE Q :"+pageQuery);
                     //logger.info(prepared_statement_string);
                     //logger.info("data - > "+jsonElement.toString());
                     //logger.info("page data - > "+pageElement.toString());
@@ -921,7 +921,7 @@ public class ApiService {
 
     String createPageQuery(JsonArray columns, String crudType){
         return "SELECT".equals(crudType) ?
-        "SELECT COUNT("+columns.get(0)+") as " +
+        "SELECT COUNT("+columns.get(0).getAsString()+") as " +
                 "TOTAL_RESULTS FROM {TABLE_NAME} {WHERE_CLAUSE} {GROUP_STATEMENT}" :
                 "SELECT COUNT("+columns.get(0)+") as " +
                         "TOTAL_RESULTS FROM {TABLE_NAME} WHERE {LIKE}"    ;
